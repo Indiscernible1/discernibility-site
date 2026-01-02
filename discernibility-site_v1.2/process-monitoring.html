@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Monitoring | Crawford's Postulate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-deep: #0a0a0f;
+            --bg-surface: #12121a;
+            --bg-elevated: #1a1a24;
+            --text-primary: #e8e6e3;
+            --text-secondary: #9a9a9a;
+            --text-muted: #6a6a6a;
+            --accent-cyan: #4ecdc4;
+            --accent-warm: #f4a261;
+            --border: #2a2a35;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+        }
+
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { color: var(--text-primary); }
+
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-deep);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .hero-small {
+            padding: 8rem 3rem 4rem;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1028 50%, #0f1a1a 100%);
+            text-align: center;
+        }
+
+        .hero-small h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 1rem;
+        }
+
+        .hero-small p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section {
+            padding: 5rem 3rem;
+        }
+
+        .section:nth-child(even) {
+            background: var(--bg-surface);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .capability-intro {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        @media (max-width: 900px) {
+            .capability-intro {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .capability-intro.reverse {
+            direction: rtl;
+        }
+
+        .capability-intro.reverse > * {
+            direction: ltr;
+        }
+
+        .capability-text h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--accent-cyan);
+        }
+
+        .capability-text p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+        }
+
+        .capability-image img,
+        .capability-image video {
+            width: 100%;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .capability-image video {
+            display: block;
+        }
+
+        .image-caption {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.75rem;
+            font-style: italic;
+        }
+
+        .media-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .media-controls a {
+            color: var(--text-muted);
+            transition: color 0.2s;
+        }
+
+        .media-controls a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .capability-image video,
+        .capability-image img.expandable {
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .capability-image video:hover,
+        .capability-image img.expandable:hover {
+            opacity: 0.9;
+        }
+
+        /* Lightbox Modal */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox video,
+        .lightbox img {
+            max-width: 90%;
+            max-height: 85%;
+            border-radius: 4px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            font-size: 2rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: color 0.2s;
+        }
+
+        .lightbox-close:hover {
+            color: var(--text-primary);
+        }
+
+        .lightbox-caption {
+            color: var(--text-secondary);
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 1.5rem;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .feature-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent-cyan);
+        }
+
+        .cta-box {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            padding: 3rem;
+            text-align: center;
+            margin-top: 4rem;
+            border-radius: 4px;
+        }
+
+        .cta-box h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta-box p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.9rem 2rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            background: var(--accent-cyan);
+            color: var(--bg-deep);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: var(--text-primary);
+            color: var(--bg-deep);
+        }
+
+        footer {
+            padding: 3rem;
+            background: var(--bg-deep);
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 1rem 1.5rem; }
+            .nav-links { display: none; }
+            .hero-small, .section { padding: 4rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="nav-brand">DISCERNIBILITY.ORG</a>
+        <ul class="nav-links">
+            <li><a href="gradient.html">The Gradient</a></li>
+            <li><a href="postulate.html">The Postulate</a></li>
+            <li><a href="implications.html">Implications</a></li>
+            <li><a href="process-monitoring.html">Process Monitoring</a></li>
+            <li><a href="academic.html">Academic</a></li>
+            <li><a href="index.html#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero-small">
+        <h1>Process Monitoring</h1>
+        <p>
+            The energy-information gradient doesn't just describe reality. It detects structure you can't otherwise see.
+        </p>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="capability-intro">
+                <div class="capability-text">
+                    <h2>Subsurface Detection</h2>
+                    <p>
+                        Reveal internal features from surface signatures alone. The ΔE<sub>i</sub> metric detects where energy flow encounters changing structural resistance—including structures hidden beneath the visible surface.
+                    </p>
+                    <p>
+                        The heat-affected zone (HAZ) extends roughly <strong>double the width</strong> of the visible weld bead. What appears as a narrow line of added material is actually surrounded by a much larger region of grain restructuring invisible to conventional inspection.
+                    </p>
+                    <ul class="feature-list">
+                        <li>Real-time grain boundary resolution</li>
+                        <li>HAZ extends far beyond visible bead</li>
+                        <li>Single-sided volumetric inspection</li>
+                    </ul>
+                </div>
+                <div class="capability-image">
+                    <video autoplay loop muted playsinline onclick="openLightbox(this, 'video')" data-caption="Real-time grain boundary dynamics during solidification">
+                        <source src="images/grain_dissolve_solidify.mp4" type="video/mp4">
+                    </video>
+                    <p class="image-caption">Real-time grain boundary dynamics during solidification</p>
+                    <div class="media-controls">
+                        <a href="images/grain_dissolve_solidify.mp4" download>↓ Download</a>
+                        <a href="#" onclick="openLightbox(document.querySelector('.capability-image video'), 'video'); return false;">⤢ Expand</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="capability-intro reverse">
+                <div class="capability-text">
+                    <h2>True Extent of Structural Change</h2>
+                    <p>
+                        The visible weld bead is just the tip of the iceberg. Thermal imaging reveals the <strong>true extent</strong> of structural modification—the larger green/yellow region represents high-plasticity zones with grain restructuring, while the narrow inner region is the actual added material.
+                    </p>
+                    <p>
+                        Side-by-side comparison of top and bottom surfaces shows thermal signatures that reveal subsurface features invisible to optical inspection. What you see isn't where the work happened.
+                    </p>
+                    <ul class="feature-list">
+                        <li>High-plasticity zone detection</li>
+                        <li>Grain restructuring extent mapping</li>
+                        <li>Top/bottom correlation analysis</li>
+                    </ul>
+                </div>
+                <div class="capability-image">
+                    <img src="images/Weld Compare clean .jpg" alt="Weld comparison showing thermal signatures vs physical appearance" class="expandable" onclick="openLightbox(this, 'image')" data-caption="Physical weld (outer) vs thermal signature (inner) — top and bottom views">
+                    <p class="image-caption">Physical weld (outer) vs thermal signature (inner) — top and bottom views</p>
+                    <div class="media-controls">
+                        <a href="images/Weld Compare clean .jpg" download>↓ Download</a>
+                        <a href="#" onclick="openLightbox(document.querySelector('img.expandable'), 'image'); return false;">⤢ Expand</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="capability-intro">
+                <div class="capability-text">
+                    <h2>Self-Organization Dynamics</h2>
+                    <p>
+                        The same metric that detects structural failure also reveals emergent organization. Left frame shows traditional thermal data—Rayleigh-Bénard convection appears static once initiated. Center (ΔE<sub>i</sub>) and right (dT/dt) frames reveal just how active an apparent "steady state" actually is.
+                    </p>
+                    <p>
+                        Standard imaging sees equilibrium. The ΔE<sub>i</sub> methodology sees continuous boundary negotiation—energy constantly redistributing through the system.
+                    </p>
+                    <ul class="feature-list">
+                        <li>Temperature alone misses the dynamics</li>
+                        <li>ΔE<sub>i</sub> reveals boundary activity</li>
+                        <li>dT/dt shows rate of energy redistribution</li>
+                    </ul>
+                </div>
+                <div class="capability-image">
+                    <video autoplay loop muted playsinline onclick="openLightbox(this, 'video')" data-caption="Triptych: Temperature | ΔEi | dT/dt — Rayleigh-Bénard convection">
+                        <source src="images/20251130_004_100cst_100c_triptych_t0-482s.mp4" type="video/mp4">
+                    </video>
+                    <p class="image-caption">Triptych: Temperature | ΔE<sub>i</sub> | dT/dt — "Steady state" isn't steady</p>
+                    <div class="media-controls">
+                        <a href="images/20251130_004_100cst_100c_triptych_t0-482s.mp4" download>↓ Download</a>
+                        <a href="#" onclick="openLightbox(document.querySelectorAll('.capability-image video')[1], 'video'); return false;">⤢ Expand</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cta-box">
+                <h3>Collaboration Inquiry</h3>
+                <p>
+                    Process monitoring applications are under active development. If you work in NDT, materials science, welding QA, or related fields and see potential here—let's talk.
+                </p>
+                <a href="mailto:contact@discernibility.org" class="btn">Get in Touch</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Crawford's Postulate © 2025 Jason Crawford</p>
+    </footer>
+
+    <!-- Lightbox Modal -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+        <button class="lightbox-close" onclick="closeLightbox(event)">&times;</button>
+        <div id="lightbox-content"></div>
+        <p class="lightbox-caption" id="lightbox-caption"></p>
+    </div>
+
+    <script>
+        function openLightbox(element, type) {
+            const lightbox = document.getElementById('lightbox');
+            const content = document.getElementById('lightbox-content');
+            const caption = document.getElementById('lightbox-caption');
+            
+            content.innerHTML = '';
+            
+            if (type === 'video') {
+                const video = document.createElement('video');
+                video.src = element.querySelector('source').src;
+                video.autoplay = true;
+                video.loop = true;
+                video.controls = true;
+                video.style.maxWidth = '90vw';
+                video.style.maxHeight = '85vh';
+                content.appendChild(video);
+            } else {
+                const img = document.createElement('img');
+                img.src = element.src;
+                img.alt = element.alt;
+                content.appendChild(img);
+            }
+            
+            caption.textContent = element.dataset.caption || '';
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeLightbox(event) {
+            if (event.target === document.getElementById('lightbox') || 
+                event.target.classList.contains('lightbox-close')) {
+                const lightbox = document.getElementById('lightbox');
+                const content = document.getElementById('lightbox-content');
+                
+                // Stop video if playing
+                const video = content.querySelector('video');
+                if (video) video.pause();
+                
+                lightbox.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+        
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const lightbox = document.getElementById('lightbox');
+                if (lightbox.classList.contains('active')) {
+                    closeLightbox({target: lightbox});
+                }
+            }
+        });
+    </script>
+</body>
+</html>
