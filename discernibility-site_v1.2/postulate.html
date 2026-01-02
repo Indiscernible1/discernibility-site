@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Postulate | Crawford's Postulate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-deep: #0a0a0f;
+            --bg-surface: #12121a;
+            --bg-elevated: #1a1a24;
+            --text-primary: #e8e6e3;
+            --text-secondary: #9a9a9a;
+            --text-muted: #6a6a6a;
+            --accent-cyan: #4ecdc4;
+            --accent-warm: #f4a261;
+            --border: #2a2a35;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+        }
+
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { color: var(--text-primary); }
+
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-deep);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .content {
+            max-width: 750px;
+            margin: 0 auto;
+            padding: 8rem 2rem 6rem;
+        }
+
+        .breadcrumb {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            margin-bottom: 2rem;
+            line-height: 1.2;
+        }
+
+        .lead {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            font-style: italic;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin: 3rem 0 1.5rem;
+            color: var(--accent-cyan);
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+
+        .axiom-box {
+            background: var(--bg-surface);
+            border-left: 3px solid var(--accent-cyan);
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .axiom-box p {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .nav-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-footer a {
+            font-size: 0.9rem;
+        }
+
+        footer {
+            padding: 3rem;
+            background: var(--bg-deep);
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 1rem 1.5rem; }
+            .nav-links { display: none; }
+            .content { padding: 6rem 1.5rem 4rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="nav-brand">DISCERNIBILITY.ORG</a>
+        <ul class="nav-links">
+            <li><a href="gradient.html">The Gradient</a></li>
+            <li><a href="postulate.html">The Postulate</a></li>
+            <li><a href="implications.html">Implications</a></li>
+            <li><a href="process-monitoring.html">Process Monitoring</a></li>
+            <li><a href="academic.html">Academic</a></li>
+            <li><a href="index.html#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <main class="content">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a> / The Postulate
+        </div>
+
+        <h1>The Core Axiom</h1>
+        
+        <p class="lead">
+            Energy and Information are the only fundamental properties. The Gradient is their relationship. Discernibility is what emerges.
+        </p>
+
+        <div class="axiom-box">
+            <p>
+                <strong>Crawford's Postulate:</strong> The fundamental substrate of physical reality is discernibility—the capacity to sustain structured information against entropic dissolution.
+            </p>
+        </div>
+
+        <h2>Energy</h2>
+        <p>
+            Energy alone dissipates. Without structure to inhabit, energy disperses toward equilibrium—the heat death trajectory. Energy is the capacity to do work, but work requires something to work <em>on</em>.
+        </p>
+
+        <h2>Information</h2>
+        <p>
+            Information alone is static. A pattern with no energy to sustain it is a snapshot—frozen, unable to persist against disturbance, unable to propagate. Information is structure, but structure requires energy to maintain itself against entropy.
+        </p>
+
+        <h2>The Gradient</h2>
+        <p>
+            The gradient is where they meet. Where energy flows through information, or where information channels energy, something new emerges: <strong>persistence with direction</strong>.
+        </p>
+        <p>
+            This is not metaphor. The energy-information gradient (ΔE<sub>i</sub>) is a measurable quantity: the rate at which energy sustains distinguishable states.
+        </p>
+
+        <h2>Discernibility</h2>
+        <p>
+            Discernibility is the output. Where the gradient is sufficient, structure becomes coherent—observable, measurable, real in the conventional sense. Particles, waves, forces, matter.
+        </p>
+        <p>
+            Where the gradient falls below threshold, reality doesn't vanish. It becomes <em>incoherent</em>—a latent field of undifferentiated potential. The veil.
+        </p>
+
+        <h2>What This Means</h2>
+        <p>
+            Zero discernibility ≠ void. It's not nothing—it's <em>unresolved something</em>. Matter doesn't wink in and out of existence; it transitions between coherent and latent states based on local gradient conditions.
+        </p>
+        <p>
+            This sidesteps the trap of idealism ("consciousness creates reality") while rejecting naive materialism ("particles are fundamental"). The structure is what emerges, not the existence itself.
+        </p>
+
+        <div class="nav-footer">
+            <a href="index.html">← Back to Home</a>
+            <a href="implications.html">Implications →</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>Crawford's Postulate © 2025 Jason Crawford</p>
+    </footer>
+</body>
+</html>

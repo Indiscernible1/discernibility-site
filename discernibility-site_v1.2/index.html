@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crawford's Postulate | Differences that Persist</title>
+    <meta name="description" content="Energy and Information are the only fundamental properties. Their gradient determines what becomes coherent, structured, observable.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-deep: #0a0a0f;
+            --bg-surface: #12121a;
+            --bg-elevated: #1a1a24;
+            --text-primary: #e8e6e3;
+            --text-secondary: #9a9a9a;
+            --text-muted: #6a6a6a;
+            --accent-cyan: #4ecdc4;
+            --accent-warm: #f4a261;
+            --accent-violet: #7c6aef;
+            --border: #2a2a35;
+            --gradient-veil: linear-gradient(135deg, #0a0a0f 0%, #1a1028 50%, #0f1a1a 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-weight: 300;
+            overflow-x: hidden;
+        }
+
+        /* Noise texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+        }
+
+        a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: var(--text-primary);
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, var(--bg-deep) 0%, transparent 100%);
+        }
+
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 400;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 8rem 3rem 4rem;
+            background: var(--gradient-veil);
+            position: relative;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: linear-gradient(to bottom, transparent, var(--bg-deep));
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            animation: fadeUp 1s ease-out;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--accent-cyan);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 5.5rem);
+            line-height: 1.05;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-tagline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            font-weight: 400;
+        }
+
+        .hero-description {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 3rem;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.9rem 2rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--accent-cyan);
+            color: var(--bg-deep);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: var(--text-primary);
+            color: var(--bg-deep);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        /* Curve Section */
+        .curve-section {
+            padding: 6rem 3rem;
+            background: var(--bg-deep);
+            position: relative;
+        }
+
+        .curve-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .curve-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .curve-header h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 1rem;
+        }
+
+        .curve-header p {
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+        }
+
+        .curve-image {
+            width: 100%;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .curve-caption {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* What It Does Section */
+        .capabilities {
+            padding: 6rem 3rem;
+            background: var(--bg-surface);
+        }
+
+        .capabilities-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .capabilities h2 {
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .capabilities-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .capability-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .capability-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-4px);
+        }
+
+        .capability-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent-cyan);
+        }
+
+        .capability-card .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .capability-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Visual Evidence Section */
+        .evidence {
+            padding: 6rem 3rem;
+            background: var(--bg-deep);
+        }
+
+        .evidence-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .evidence h2 {
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .evidence > p {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .evidence-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .evidence-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            aspect-ratio: 4/3;
+        }
+
+        .evidence-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .evidence-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .evidence-item .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem;
+            background: linear-gradient(to top, rgba(10,10,15,0.95), transparent);
+        }
+
+        .evidence-item h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .evidence-item p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Navigation Cards */
+        .explore {
+            padding: 6rem 3rem;
+            background: var(--bg-surface);
+        }
+
+        .explore-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .explore h2 {
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .explore-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 700px) {
+            .explore-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .explore-card {
+            display: block;
+            padding: 2rem;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .explore-card:hover {
+            border-color: var(--accent-cyan);
+            background: var(--bg-deep);
+        }
+
+        .explore-card h3 {
+            font-size: 1.3rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .explore-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .explore-card .arrow {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--accent-cyan);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Living Document */
+        .cta-section {
+            padding: 6rem 3rem;
+            background: var(--gradient-veil);
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            margin-bottom: 1rem;
+        }
+
+        .cta-section p {
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            font-size: 1.1rem;
+        }
+
+        .cta-section .btn {
+            display: inline-block;
+        }
+
+        /* Footer */
+        footer {
+            padding: 3rem;
+            background: var(--bg-deep);
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem 1.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 6rem 1.5rem 3rem;
+            }
+
+            .curve-section,
+            .capabilities,
+            .evidence,
+            .explore,
+            .cta-section {
+                padding: 4rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-brand">DISCERNIBILITY.ORG</div>
+        <ul class="nav-links">
+            <li><a href="gradient.html">The Gradient</a></li>
+            <li><a href="postulate.html">The Postulate</a></li>
+            <li><a href="implications.html">Implications</a></li>
+            <li><a href="process-monitoring.html">Process Monitoring</a></li>
+            <li><a href="academic.html">Academic</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-label">Crawford's Postulate</div>
+            <h1>Differences that Persist</h1>
+            <p class="hero-tagline">Energy gives Information persistence. Information gives Energy purpose.</p>
+            <p class="hero-description">
+                Energy and Information are the only fundamental properties. Their gradient—the tension between them—determines what becomes coherent, structured, observable.
+            </p>
+            <p class="hero-description">
+                Below the threshold of discernibility, reality doesn't vanish. It simply hasn't resolved yet.
+            </p>
+            <div class="hero-cta">
+                <a href="#postulate" class="btn btn-primary">Enter the Framework</a>
+                <a href="process-monitoring.html" class="btn btn-secondary">See It Applied</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="curve-section" id="postulate">
+        <div class="curve-container">
+            <div class="curve-header">
+                <h2>See the Framework</h2>
+                <p>
+                    An interactive visualization of the discernibility gradient—from black holes (maximum coherence) to cosmic voids (threshold of structure). Not a map of space, but a map of where space <em>exists</em>.
+                </p>
+                <a href="gradient.html" class="btn btn-primary" style="margin-top: 1.5rem; display: inline-block;">Enter the Gradient →</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="curve-section">
+        <div class="curve-container">
+            <div class="curve-header">
+                <h2>One Curve. All of Reality.</h2>
+                <p>
+                    The Q<sub>rel</sub> mapping places every environment—from cosmic voids to semiconductors—on a single continuum derived from first principles. Where you sit on this curve determines how energy and information interact locally.
+                </p>
+            </div>
+            <img src="images/101_curve.jpg" alt="The 101 Qrel Curve - mapping cosmic voids to dense materials" class="curve-image">
+            <p class="curve-caption">
+                The 101 curve: Cosmic voids (left) through intergalactic medium, vacuum, atmosphere, liquids, glass, crystals, to semiconductors (right). Normalized effective speed of information flow (c<sub>rel</sub>) decreases with increasing density.
+            </p>
+        </div>
+    </section>
+
+    <section class="capabilities" id="implications">
+        <div class="capabilities-container">
+            <h2>What This Framework Does</h2>
+            <div class="capabilities-grid">
+                <div class="capability-card">
+                    <h3>It Unifies</h3>
+                    <div class="subtitle">One Substrate</div>
+                    <p>
+                        Gravity, light, nuclear forces, the emergence of life—all expressions of the same underlying dynamic. Not separate phenomena requiring separate explanations.
+                    </p>
+                </div>
+                <div class="capability-card">
+                    <h3>It Predicts</h3>
+                    <div class="subtitle">Testable Claims</div>
+                    <p>
+                        Resolves the vacuum energy catastrophe. Aligns Hubble constant measurements. Explains galactic rotation curves without invoking dark matter.
+                    </p>
+                </div>
+                <div class="capability-card">
+                    <h3>It Applies</h3>
+                    <div class="subtitle">Real-World Use</div>
+                    <p>
+                        Detects structural failure before it becomes visible. Reveals subsurface features from surface signatures alone. Monitors processes in real-time.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="evidence">
+        <div class="evidence-container">
+            <h2>Visual Evidence</h2>
+            <p>The same ΔE<sub>i</sub> metric reveals structure across radically different physical systems.</p>
+            <div class="evidence-grid">
+                <div class="evidence-item">
+                    <img src="images/rbc_hex.png" alt="Rayleigh-Bénard convection cells">
+                    <div class="overlay">
+                        <h4>Self-Organization</h4>
+                        <p>Convection cells emerge at energy boundaries</p>
+                    </div>
+                </div>
+                <div class="evidence-item">
+                    <img src="images/weld_haz.png" alt="Weld heat affected zone analysis">
+                    <div class="overlay">
+                        <h4>Subsurface Structure</h4>
+                        <p>See through surfaces to hidden features</p>
+                    </div>
+                </div>
+                <div class="evidence-item">
+                    <img src="images/realtime.png" alt="Real-time thermal monitoring">
+                    <div class="overlay">
+                        <h4>Real-Time Monitoring</h4>
+                        <p>Watch structure evolve dynamically</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="explore">
+        <div class="explore-container">
+            <h2>Explore the Framework</h2>
+            <div class="explore-grid">
+                <a href="postulate.html" class="explore-card">
+                    <h3>The Postulate</h3>
+                    <p>The core axiom in plain language. Energy, Information, and the gradient between them.</p>
+                    <span class="arrow">Start here →</span>
+                </a>
+                <a href="implications.html" class="explore-card">
+                    <h3>Implications</h3>
+                    <p>What follows: cosmology, light behavior, the thermodynamic ratchet, origin of structure.</p>
+                    <span class="arrow">Explore →</span>
+                </a>
+                <a href="process-monitoring.html" class="explore-card">
+                    <h3>Process Monitoring</h3>
+                    <p>Practical applications in NDT, welding analysis, materials science, and beyond.</p>
+                    <span class="arrow">See applications →</span>
+                </a>
+                <a href="academic.html" class="explore-card">
+                    <h3>Academic</h3>
+                    <p>The formal 9 Laws framework, preprints, simulation code, and OSF publications.</p>
+                    <span class="arrow">View papers →</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section" id="contact">
+        <h2>This is a Living Document</h2>
+        <p>
+            Crawford's Postulate is under active development. If you work in physics, materials science, NDT, or origin-of-life research and see something here—reach out.
+        </p>
+        <a href="mailto:jason.crawford@live.com" class="btn btn-primary">Get in Touch</a>
+    </section>
+
+    <footer>
+        <p>
+            Crawford's Postulate © 2025 Jason Crawford | 
+            <a href="https://osf.io/f2r7d" target="_blank">OSF Preprints</a> | 
+            <a href="mailto:jason.crawford@live.com">Contact</a>
+        </p>
+    </footer>
+</body>
+</html>

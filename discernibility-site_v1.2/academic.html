@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic | Crawford's Postulate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-deep: #0a0a0f;
+            --bg-surface: #12121a;
+            --bg-elevated: #1a1a24;
+            --text-primary: #e8e6e3;
+            --text-secondary: #9a9a9a;
+            --text-muted: #6a6a6a;
+            --accent-cyan: #4ecdc4;
+            --accent-warm: #f4a261;
+            --border: #2a2a35;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+        }
+
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { color: var(--text-primary); }
+
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-deep);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .hero-small {
+            padding: 8rem 3rem 4rem;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1028 50%, #0f1a1a 100%);
+            text-align: center;
+        }
+
+        .hero-small h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 1rem;
+        }
+
+        .hero-small p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section {
+            padding: 4rem 3rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .paper-list {
+            list-style: none;
+        }
+
+        .paper-item {
+            padding: 1.5rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .paper-item:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        .paper-item h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .paper-item .meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .paper-item p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .paper-item .link {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .laws-summary {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .laws-summary h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--accent-cyan);
+        }
+
+        .law-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .law-group h4 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .law-group ul {
+            list-style: none;
+        }
+
+        .law-group li {
+            padding: 0.4rem 0;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .law-group li strong {
+            color: var(--text-primary);
+        }
+
+        footer {
+            padding: 3rem;
+            background: var(--bg-deep);
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 1rem 1.5rem; }
+            .nav-links { display: none; }
+            .hero-small, .section { padding: 4rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="nav-brand">DISCERNIBILITY.ORG</a>
+        <ul class="nav-links">
+            <li><a href="gradient.html">The Gradient</a></li>
+            <li><a href="postulate.html">The Postulate</a></li>
+            <li><a href="implications.html">Implications</a></li>
+            <li><a href="process-monitoring.html">Process Monitoring</a></li>
+            <li><a href="academic.html">Academic</a></li>
+            <li><a href="index.html#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero-small">
+        <h1>Academic</h1>
+        <p>
+            The formal framework, equations, and published preprints.
+        </p>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <h2>The 9 Laws</h2>
+            
+            <div class="laws-summary">
+                <h3>EiG Framework: Unified Laws and Principles</h3>
+                
+                <div class="law-group">
+                    <h4>Foundational Dynamics (Laws 1–3)</h4>
+                    <ul>
+                        <li><strong>Law 1 – Conservation:</strong> Total discernibility energy is conserved across phase-shifted realities</li>
+                        <li><strong>Law 2 – Gravity:</strong> Gravity emerges as a discernibility gradient: g⃗ = −k<sub>g</sub>∇Q</li>
+                        <li><strong>Law 3 – Time/Light:</strong> Effective speed of light varies with complexity: c<sub>eff</sub> = c<sub>norm</sub>e<sup>−γQ/2</sup></li>
+                    </ul>
+                </div>
+
+                <div class="law-group">
+                    <h4>Interaction Mechanics (Laws 4–6)</h4>
+                    <ul>
+                        <li><strong>Law 4 – Mass/Photons:</strong> Mass is the energy cost of maintaining discernibility</li>
+                        <li><strong>Law 5 – Nuclear Forces:</strong> Strong force as discernibility gradient in nuclear domain</li>
+                        <li><strong>Law 6 – Phase-Shift:</strong> The veil mediates phase-shifted interactions at ΔE<sub>i</sub> = 0</li>
+                    </ul>
+                </div>
+
+                <div class="law-group">
+                    <h4>Emergence & Resonance (Laws 7–9)</h4>
+                    <ul>
+                        <li><strong>Law 7 – Complexity:</strong> Sustained complexity gradients drive emergent structure</li>
+                        <li><strong>Law 8 – Coherence:</strong> Habitability requires bounded discernibility: −⅓ ≤ ΔE<sub>i,norm</sub> ≤ +⅓</li>
+                        <li><strong>Law 9 – Resonance:</strong> 400–405 nm photonic resonance maximizes c<sub>eff</sub></li>
+                    </ul>
+                </div>
+            </div>
+
+            <p style="color: var(--text-secondary); margin-bottom: 3rem;">
+                The complete formal treatment with derivations and validations is available in the preprints below.
+            </p>
+
+            <h2>Preprints</h2>
+            
+            <ul class="paper-list">
+                <li class="paper-item">
+                    <h3>The Energy-Information Gradient (EiG) Framework: Unified Laws and Principles (v2.1)</h3>
+                    <div class="meta">Jason Crawford · May 2025 · OSF Preprints</div>
+                    <p>
+                        The primary framework document presenting the 9 unified laws, integrating ELBF, NFDL, and DFT. Includes testable predictions for BAO peak shift, gravitational lensing, and coherence thresholds.
+                    </p>
+                    <a href="https://osf.io/f2r7d" target="_blank" class="link">View on OSF →</a>
+                </li>
+
+                <li class="paper-item">
+                    <h3>EiG Light Behavior Framework: Resolving the Double-Slit Paradox via Discernibility Gradients</h3>
+                    <div class="meta">Jason Crawford · May 2025 · OSF Preprints</div>
+                    <p>
+                        ELBF models photons as structured information packets governed by discernibility gradients. Resolves the double-slit paradox through coherence loss as phase transition, not measurement.
+                    </p>
+                    <a href="https://osf.io/f2r7d" target="_blank" class="link">View on OSF →</a>
+                </li>
+
+                <li class="paper-item">
+                    <h3>Resolving the Vacuum Energy Catastrophe through an Energy-Information Gradient Framework</h3>
+                    <div class="meta">Jason Crawford · May 2025 · OSF Preprints</div>
+                    <p>
+                        Demonstrates how the EiG framework constrains vacuum energy to ρ<sub>vac</sub> ≈ 5.36 × 10<sup>−10</sup> J/m³, matching observations and resolving the 123-order-of-magnitude discrepancy with QFT predictions.
+                    </p>
+                    <a href="https://osf.io/f2r7d" target="_blank" class="link">View on OSF →</a>
+                </li>
+
+                <li class="paper-item">
+                    <h3>Challenging the Constancy of the Speed of Light</h3>
+                    <div class="meta">Jason Crawford · May 2025 · OSF Preprints</div>
+                    <p>
+                        Evidence for a vacuum-density-dependent exponential gradient in the speed of light from cosmic structures and supernova data.
+                    </p>
+                    <a href="https://osf.io/f2r7d" target="_blank" class="link">View on OSF →</a>
+                </li>
+
+                <li class="paper-item">
+                    <h3>Resolving the Hubble Tension with Cosmic δEi</h3>
+                    <div class="meta">Jason Crawford · May 2025 · OSF Preprints</div>
+                    <p>
+                        A discernibility-based cosmological framework aligning local Hubble constant measurements at H<sub>0</sub> ≈ 70 km/s/Mpc.
+                    </p>
+                    <a href="https://osf.io/f2r7d" target="_blank" class="link">View on OSF →</a>
+                </li>
+
+                <li class="paper-item">
+                    <h3>Gravity as a Discernibility Gradient: An Energy-Information Perspective</h3>
+                    <div class="meta">Jason Crawford · May 2025 · OSF Preprints</div>
+                    <p>
+                        Derives emergent gravity from discernibility gradients, explaining galactic rotation curves without invoking dark matter.
+                    </p>
+                    <a href="https://osf.io/f2r7d" target="_blank" class="link">View on OSF →</a>
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <footer>
+        <p>Crawford's Postulate © 2025 Jason Crawford</p>
+    </footer>
+</body>
+</html>

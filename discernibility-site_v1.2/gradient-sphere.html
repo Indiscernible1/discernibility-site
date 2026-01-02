@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Discernibility Gradient | Crawford's Postulate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #e8e6e3;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ui-overlay {
+            position: fixed;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .title {
+            top: 2rem;
+            left: 2rem;
+        }
+
+        .title h1 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .title p {
+            font-size: 0.85rem;
+            color: #888;
+            max-width: 300px;
+            line-height: 1.5;
+        }
+
+        .legend {
+            bottom: 2rem;
+            left: 2rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+        }
+
+        .scale {
+            bottom: 2rem;
+            right: 2rem;
+            text-align: right;
+        }
+
+        .scale-bar {
+            width: 200px;
+            height: 12px;
+            background: linear-gradient(to right, #000, #222, #555, #999, #ddd, #fff);
+            border-radius: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        .info-panel {
+            top: 2rem;
+            right: 2rem;
+            background: rgba(10, 10, 15, 0.85);
+            border: 1px solid #333;
+            padding: 1.5rem;
+            border-radius: 4px;
+            max-width: 280px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .info-panel.visible {
+            opacity: 1;
+        }
+
+        .info-panel h3 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #4ecdc4;
+        }
+
+        .info-panel .qrel {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 0.75rem;
+        }
+
+        .info-panel p {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #aaa;
+        }
+
+        .controls {
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 0.75rem;
+            color: #555;
+        }
+
+        .zoom-indicator {
+            position: fixed;
+            bottom: 6rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: #4ecdc4;
+            opacity: 0.8;
+        }
+
+        #tooltip {
+            position: fixed;
+            background: rgba(10, 10, 15, 0.9);
+            border: 1px solid #4ecdc4;
+            padding: 0.5rem 0.75rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            z-index: 200;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div class="ui-overlay title">
+        <h1>THE DISCERNIBILITY GRADIENT</h1>
+        <p>From quantum substrate to maximum coherence. White center: black holes (all information). Dark edge: cosmic voids (threshold of structure).</p>
+    </div>
+
+    <div class="ui-overlay legend">
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #ff6b6b;"></div>
+            <span>Cosmic / Low Q<sub>rel</sub></span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #4ecdc4;"></div>
+            <span>Planetary / Mid Q<sub>rel</sub></span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: #f4a261;"></div>
+            <span>Materials / High Q<sub>rel</sub></span>
+        </div>
+    </div>
+
+    <div class="ui-overlay scale">
+        <div class="scale-bar"></div>
+        <div class="scale-labels">
+            <span>Void (Q=0)</span>
+            <span>Dense (Q=100)</span>
+        </div>
+    </div>
+
+    <div class="ui-overlay info-panel" id="info-panel">
+        <h3 id="info-name">-</h3>
+        <div class="qrel" id="info-qrel">Q<sub>rel</sub>: -</div>
+        <p id="info-desc">-</p>
+    </div>
+
+    <div class="ui-overlay controls">
+        Drag to rotate · Scroll to zoom · Hover for details
+    </div>
+
+    <div class="zoom-indicator" id="zoom-indicator">Q<sub>rel</sub> ≈ 50</div>
+
+    <div id="tooltip"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Data points positioned by Q_rel (0 = edge/void, 100 = center/black hole)
+        const dataPoints = [
+            // Cosmic scale (outer regions)
+            { name: "Cosmic Void", qrel: 5, color: 0xff6b6b, desc: "Near-zero density. The edge of discernibility. Structure barely persists." },
+            { name: "CMB Boundary", qrel: 12, color: 0xff6b6b, desc: "The noise floor of discernibility itself. Not an echo—a threshold." },
+            { name: "Cosmic Filaments", qrel: 25, color: 0xff6b6b, desc: "Galaxy clusters connected by dark matter bridges. Structure emerging from void." },
+            { name: "Intergalactic Medium", qrel: 30, color: 0xff6b6b, desc: "Diffuse plasma between galaxies. ~1 atom per cubic meter." },
+            { name: "Interstellar Medium", qrel: 40, color: 0xff6b6b, desc: "Gas and dust between stars. Birthplace of solar systems." },
+            
+            // Planetary scale (middle regions)
+            { name: "High Vacuum (Lab)", qrel: 52, color: 0x4ecdc4, desc: "Best vacuum achievable on Earth. Still contains billions of molecules per cm³." },
+            { name: "Earth Orbit", qrel: 55, color: 0x4ecdc4, desc: "Low Earth orbit conditions. ~10⁶ particles per cm³." },
+            { name: "Upper Atmosphere", qrel: 58, color: 0x4ecdc4, desc: "Thermosphere. Where auroras form." },
+            { name: "Air (Sea Level)", qrel: 63, color: 0x4ecdc4, desc: "Earth's atmosphere. The medium of our perception." },
+            { name: "Water", qrel: 73, color: 0x4ecdc4, desc: "The solvent of life. High discernibility, moderate density." },
+            
+            // Materials scale (inner regions)
+            { name: "Olive Oil", qrel: 75, color: 0xf4a261, desc: "Organic molecular chains. Complex information structure." },
+            { name: "Glass (BK7)", qrel: 77, color: 0xf4a261, desc: "Amorphous solid. Information frozen in disordered arrangement." },
+            { name: "Sapphire", qrel: 79, color: 0xf4a261, desc: "Crystalline aluminum oxide. Ordered lattice structure." },
+            { name: "Diamond", qrel: 82, color: 0xf4a261, desc: "Maximum atomic bonding density. Pure carbon lattice." },
+            { name: "Silicon", qrel: 84, color: 0xf4a261, desc: "Semiconductor. Where information becomes computation." },
+            { name: "Germanium", qrel: 86, color: 0xf4a261, desc: "Dense semiconductor. High refractive index." },
+            
+            // Extreme scale (center)
+            { name: "Neutron Star Surface", qrel: 94, color: 0xffffff, desc: "Nuclear density matter. Atoms crushed into neutrons." },
+            { name: "Event Horizon", qrel: 99, color: 0xffffff, desc: "Maximum discernibility. All information, all wavelengths. Not black—blindingly coherent." },
+        ];
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Create gradient sphere using custom shader
+        const sphereGeometry = new THREE.SphereGeometry(5, 128, 128);
+        const sphereMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 }
+            },
+            vertexShader: `
+                varying vec3 vPosition;
+                varying vec3 vNormal;
+                void main() {
+                    vPosition = position;
+                    vNormal = normal;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vPosition;
+                varying vec3 vNormal;
+                uniform float time;
+                
+                // Noise function for subtle variation
+                float hash(vec3 p) {
+                    p = fract(p * 0.3183099 + .1);
+                    p *= 17.0;
+                    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+                }
+                
+                float noise(vec3 x) {
+                    vec3 i = floor(x);
+                    vec3 f = fract(x);
+                    f = f * f * (3.0 - 2.0 * f);
+                    return mix(mix(mix(hash(i + vec3(0,0,0)), hash(i + vec3(1,0,0)), f.x),
+                                   mix(hash(i + vec3(0,1,0)), hash(i + vec3(1,1,0)), f.x), f.y),
+                               mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x),
+                                   mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y), f.z);
+                }
+                
+                void main() {
+                    float dist = length(vPosition) / 5.0; // 0 at center, 1 at edge
+                    
+                    // Base gradient: white at center, black at edge
+                    float brightness = 1.0 - pow(dist, 1.5);
+                    
+                    // Add subtle noise for texture
+                    float n = noise(vPosition * 2.0 + time * 0.1) * 0.1;
+                    brightness += n * (1.0 - dist);
+                    
+                    // Slight warm tint toward center (energy)
+                    vec3 warmWhite = vec3(1.0, 0.98, 0.95);
+                    vec3 coolBlack = vec3(0.02, 0.02, 0.04);
+                    
+                    vec3 color = mix(coolBlack, warmWhite, brightness);
+                    
+                    // Edge glow
+                    float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 3.0);
+                    color += vec3(0.1, 0.15, 0.2) * fresnel * 0.3;
+                    
+                    gl_FragColor = vec4(color, 0.95);
+                }
+            `,
+            transparent: true,
+            side: THREE.FrontSide
+        });
+
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        scene.add(sphere);
+
+        // Add outer glow
+        const glowGeometry = new THREE.SphereGeometry(5.5, 64, 64);
+        const glowMaterial = new THREE.ShaderMaterial({
+            uniforms: {},
+            vertexShader: `
+                varying vec3 vNormal;
+                void main() {
+                    vNormal = normalize(normalMatrix * normal);
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vNormal;
+                void main() {
+                    float intensity = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
+                    gl_FragColor = vec4(0.2, 0.4, 0.5, 1.0) * intensity * 0.5;
+                }
+            `,
+            side: THREE.BackSide,
+            blending: THREE.AdditiveBlending,
+            transparent: true
+        });
+        const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+        scene.add(glowMesh);
+
+        // Create data point markers
+        const markers = [];
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        dataPoints.forEach(point => {
+            // Convert Q_rel to radius (high Q = near center)
+            const radius = 4.8 * (1 - point.qrel / 100);
+            
+            // Random position on sphere of that radius
+            const phi = Math.random() * Math.PI * 2;
+            const theta = Math.acos(2 * Math.random() - 1);
+            
+            const x = radius * Math.sin(theta) * Math.cos(phi);
+            const y = radius * Math.sin(theta) * Math.sin(phi);
+            const z = radius * Math.cos(theta);
+
+            // Marker geometry
+            const markerGeo = new THREE.SphereGeometry(0.06, 16, 16);
+            const markerMat = new THREE.MeshBasicMaterial({ 
+                color: point.color,
+                transparent: true,
+                opacity: 0.9
+            });
+            const marker = new THREE.Mesh(markerGeo, markerMat);
+            marker.position.set(x, y, z);
+            marker.userData = point;
+            
+            scene.add(marker);
+            markers.push(marker);
+
+            // Add subtle ring around marker
+            const ringGeo = new THREE.RingGeometry(0.08, 0.12, 32);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: point.color,
+                transparent: true,
+                opacity: 0.3,
+                side: THREE.DoubleSide
+            });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.position.copy(marker.position);
+            ring.lookAt(0, 0, 0);
+            scene.add(ring);
+        });
+
+        // Camera positioning
+        camera.position.z = 12;
+        let targetZoom = 12;
+        let currentZoom = 12;
+
+        // Rotation controls
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let rotationVelocity = { x: 0, y: 0 };
+        const rotationGroup = new THREE.Group();
+        rotationGroup.add(sphere);
+        rotationGroup.add(glowMesh);
+        markers.forEach(m => rotationGroup.add(m));
+        scene.add(rotationGroup);
+
+        // Remove markers from rotationGroup and add directly to scene for raycasting
+        // Actually let's keep them in the group but raycast properly
+
+        // Event handlers
+        renderer.domElement.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        renderer.domElement.addEventListener('mousemove', (e) => {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            if (isDragging) {
+                const deltaX = e.clientX - previousMousePosition.x;
+                const deltaY = e.clientY - previousMousePosition.y;
+                
+                rotationVelocity.x = deltaY * 0.005;
+                rotationVelocity.y = deltaX * 0.005;
+                
+                rotationGroup.rotation.x += rotationVelocity.x;
+                rotationGroup.rotation.y += rotationVelocity.y;
+                
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            }
+
+            // Tooltip on hover
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(markers);
+            
+            const tooltip = document.getElementById('tooltip');
+            const infoPanel = document.getElementById('info-panel');
+            
+            if (intersects.length > 0) {
+                const point = intersects[0].object.userData;
+                tooltip.style.left = e.clientX + 15 + 'px';
+                tooltip.style.top = e.clientY + 15 + 'px';
+                tooltip.textContent = point.name;
+                tooltip.style.opacity = '1';
+                
+                document.getElementById('info-name').textContent = point.name;
+                document.getElementById('info-qrel').innerHTML = 'Q<sub>rel</sub>: ' + point.qrel;
+                document.getElementById('info-desc').textContent = point.desc;
+                infoPanel.classList.add('visible');
+                
+                document.body.style.cursor = 'pointer';
+            } else {
+                tooltip.style.opacity = '0';
+                infoPanel.classList.remove('visible');
+                document.body.style.cursor = 'grab';
+            }
+        });
+
+        renderer.domElement.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        renderer.domElement.addEventListener('mouseleave', () => {
+            isDragging = false;
+        });
+
+        renderer.domElement.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            targetZoom += e.deltaY * 0.01;
+            targetZoom = Math.max(6, Math.min(20, targetZoom));
+        }, { passive: false });
+
+        // Window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Animation loop
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            time += 0.01;
+            sphereMaterial.uniforms.time.value = time;
+
+            // Smooth zoom
+            currentZoom += (targetZoom - currentZoom) * 0.1;
+            camera.position.z = currentZoom;
+
+            // Update zoom indicator
+            const zoomQrel = Math.round(100 - ((currentZoom - 6) / 14) * 100);
+            document.getElementById('zoom-indicator').innerHTML = 
+                'Q<sub>rel</sub> ≈ ' + Math.max(0, Math.min(100, zoomQrel));
+
+            // Auto-rotation when not dragging
+            if (!isDragging) {
+                rotationGroup.rotation.y += 0.001;
+                rotationVelocity.x *= 0.95;
+                rotationVelocity.y *= 0.95;
+            }
+
+            // Pulse markers slightly
+            markers.forEach((marker, i) => {
+                const scale = 1 + Math.sin(time * 2 + i) * 0.1;
+                marker.scale.setScalar(scale);
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

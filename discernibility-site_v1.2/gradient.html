@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Gradient | Crawford's Postulate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #030305;
+            --text-primary: #e8e6e3;
+            --text-secondary: #9a9a9a;
+            --text-muted: #5a5a5a;
+            --accent-cyan: #4ecdc4;
+            --accent-warm: #f4a261;
+            --border: #2a2a35;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: 'IBM Plex Sans', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+        }
+
+        a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: var(--text-primary);
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(3,3,5,0.95) 0%, transparent 100%);
+        }
+
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 400;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a.active {
+            color: var(--accent-cyan);
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ui-overlay {
+            position: fixed;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .title-block {
+            bottom: 3rem;
+            left: 3rem;
+            max-width: 400px;
+        }
+
+        .title-block h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.1;
+        }
+
+        .title-block .tagline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .title-block p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .legend {
+            bottom: 3rem;
+            right: 3rem;
+            text-align: right;
+        }
+
+        .legend h4 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 0.6rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 0.75rem;
+        }
+
+        .scale-indicator {
+            top: 50%;
+            right: 3rem;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .scale-bar {
+            width: 8px;
+            height: 200px;
+            background: linear-gradient(to bottom, #fff, #aaa, #666, #333, #111, #050505);
+            border-radius: 4px;
+            margin-bottom: 0.75rem;
+        }
+
+        .scale-labels {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .scale-labels span {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-panel {
+            top: 6rem;
+            right: 3rem;
+            background: rgba(3, 3, 5, 0.9);
+            border: 1px solid var(--border);
+            padding: 1.25rem;
+            border-radius: 4px;
+            max-width: 260px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .info-panel.visible {
+            opacity: 1;
+        }
+
+        .info-panel h3 {
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
+            color: var(--accent-cyan);
+        }
+
+        .info-panel .qrel {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.6rem;
+        }
+
+        .info-panel p {
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        .controls {
+            top: 50%;
+            left: 3rem;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            line-height: 2;
+        }
+
+        .cmb-note {
+            top: 6rem;
+            left: 3rem;
+            max-width: 280px;
+            padding: 1rem;
+            background: rgba(3, 3, 5, 0.8);
+            border-left: 2px solid var(--accent-warm);
+        }
+
+        .cmb-note h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-warm);
+            margin-bottom: 0.5rem;
+        }
+
+        .cmb-note p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        #tooltip {
+            position: fixed;
+            background: rgba(3, 3, 5, 0.95);
+            border: 1px solid var(--accent-cyan);
+            padding: 0.4rem 0.6rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            z-index: 200;
+        }
+
+        @media (max-width: 900px) {
+            nav {
+                padding: 1rem 1.5rem;
+            }
+            .nav-links {
+                display: none;
+            }
+            .title-block {
+                bottom: 1.5rem;
+                left: 1.5rem;
+                right: 1.5rem;
+                max-width: none;
+            }
+            .title-block h1 {
+                font-size: 1.8rem;
+            }
+            .legend, .scale-indicator, .cmb-note, .controls {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="nav-brand">DISCERNIBILITY.ORG</a>
+        <ul class="nav-links">
+            <li><a href="gradient.html" class="active">The Gradient</a></li>
+            <li><a href="postulate.html">The Postulate</a></li>
+            <li><a href="implications.html">Implications</a></li>
+            <li><a href="process-monitoring.html">Process Monitoring</a></li>
+            <li><a href="academic.html">Academic</a></li>
+            <li><a href="index.html#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <div id="canvas-container"></div>
+
+    <div class="ui-overlay title-block">
+        <h1>The Discernibility Gradient</h1>
+        <p class="tagline">Where spacetime exists</p>
+        <p>
+            White center: maximum discernibility—black holes saturated with information. 
+            Dissolving edge: the threshold where coherence fades into the quantum substrate. 
+            This sphere isn't a map of space. It's a map of where space <em>is</em>.
+        </p>
+    </div>
+
+    <div class="ui-overlay cmb-note">
+        <h4>The CMB</h4>
+        <p>
+            Not a shell. Not a boundary. The Cosmic Microwave Background is the <em>texture</em> of coherence itself—the omnipresent noise floor against which all structure becomes distinguishable.
+        </p>
+    </div>
+
+    <div class="ui-overlay legend">
+        <h4>Q<sub>rel</sub> Domains</h4>
+        <div class="legend-item">
+            Cosmic (voids, filaments)
+            <div class="legend-dot" style="background: #ff6b6b;"></div>
+        </div>
+        <div class="legend-item">
+            Planetary (atmosphere, oceans)
+            <div class="legend-dot" style="background: #4ecdc4;"></div>
+        </div>
+        <div class="legend-item">
+            Material (glass, crystals)
+            <div class="legend-dot" style="background: #f4a261;"></div>
+        </div>
+        <div class="legend-item">
+            Extreme (neutron stars, horizons)
+            <div class="legend-dot" style="background: #ffffff;"></div>
+        </div>
+    </div>
+
+    <div class="ui-overlay scale-indicator">
+        <div class="scale-bar"></div>
+        <div class="scale-labels">
+            <span>Q=100</span>
+            <span>Dense</span>
+            <span>↑</span>
+            <span>↓</span>
+            <span>Sparse</span>
+            <span>Q=0</span>
+        </div>
+    </div>
+
+    <div class="ui-overlay controls">
+        Drag to rotate<br>
+        Scroll to zoom<br>
+        Hover for data
+    </div>
+
+    <div class="ui-overlay info-panel" id="info-panel">
+        <h3 id="info-name">-</h3>
+        <div class="qrel" id="info-qrel">Q<sub>rel</sub>: -</div>
+        <p id="info-desc">-</p>
+    </div>
+
+    <div id="tooltip"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Data points positioned by Q_rel (0 = edge/void, 100 = center/black hole)
+        const dataPoints = [
+            // Cosmic scale (outer regions) - where spacetime thins
+            { name: "Cosmic Void", qrel: 8, color: 0xff6b6b, desc: "Near-zero density. Structure barely coheres. The edge of where 'place' means anything." },
+            { name: "Cosmic Filaments", qrel: 25, color: 0xff6b6b, desc: "Dark matter bridges between galaxy clusters. Structure emerging from threshold." },
+            { name: "Intergalactic Medium", qrel: 30, color: 0xff6b6b, desc: "Diffuse plasma between galaxies. ~1 atom per cubic meter. Spacetime stretched thin." },
+            { name: "Interstellar Medium", qrel: 42, color: 0xff6b6b, desc: "Gas and dust between stars. Where solar systems condense from the gradient." },
+            
+            // Planetary scale (middle regions)
+            { name: "Earth Orbit", qrel: 55, color: 0x4ecdc4, desc: "Low Earth orbit. Still sparse by material standards, dense by cosmic ones." },
+            { name: "Upper Atmosphere", qrel: 60, color: 0x4ecdc4, desc: "Thermosphere. Where auroras trace magnetic field lines." },
+            { name: "Sea Level Air", qrel: 65, color: 0x4ecdc4, desc: "Earth's atmosphere. The medium through which we perceive." },
+            { name: "Ocean", qrel: 73, color: 0x4ecdc4, desc: "Water. The solvent of life. High discernibility, high information capacity." },
+            
+            // Materials scale (inner regions)
+            { name: "Glass", qrel: 77, color: 0xf4a261, desc: "Amorphous solid. Information frozen in disordered arrangement." },
+            { name: "Quartz Crystal", qrel: 79, color: 0xf4a261, desc: "Crystalline SiO₂. Ordered lattice. Piezoelectric—structure converts to signal." },
+            { name: "Sapphire", qrel: 81, color: 0xf4a261, desc: "Al₂O₃ crystal. High hardness, high refractive index. Information tightly bound." },
+            { name: "Diamond", qrel: 84, color: 0xf4a261, desc: "Pure carbon lattice. Maximum atomic bonding density in normal matter." },
+            { name: "Silicon", qrel: 86, color: 0xf4a261, desc: "Semiconductor. Where information becomes computation." },
+            { name: "Germanium", qrel: 88, color: 0xf4a261, desc: "Dense semiconductor. High refractive index. Deep in the gradient." },
+            
+            // Extreme scale (approaching center)
+            { name: "White Dwarf Core", qrel: 92, color: 0xffffff, desc: "Electron-degenerate matter. A solar mass in Earth's volume." },
+            { name: "Neutron Star", qrel: 96, color: 0xffffff, desc: "Nuclear density. Atoms crushed into neutron fluid. Spacetime severely curved." },
+            { name: "Event Horizon", qrel: 99, color: 0xffffff, desc: "Maximum discernibility. Not black—saturated. All information, all wavelengths, all structure condensed." },
+        ];
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setClearColor(0x030305, 1);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Create gradient sphere with dissolving edge and CMB texture
+        const sphereGeometry = new THREE.SphereGeometry(5, 256, 256);
+        const sphereMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 }
+            },
+            vertexShader: `
+                varying vec3 vPosition;
+                varying vec3 vNormal;
+                varying vec2 vUv;
+                
+                void main() {
+                    vPosition = position;
+                    vNormal = normalize(normalMatrix * normal);
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vPosition;
+                varying vec3 vNormal;
+                varying vec2 vUv;
+                uniform float time;
+                
+                // Improved noise functions
+                vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+                vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+                
+                float snoise(vec3 v) {
+                    const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+                    const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+                    
+                    vec3 i  = floor(v + dot(v, C.yyy));
+                    vec3 x0 = v - i + dot(i, C.xxx);
+                    
+                    vec3 g = step(x0.yzx, x0.xyz);
+                    vec3 l = 1.0 - g;
+                    vec3 i1 = min(g.xyz, l.zxy);
+                    vec3 i2 = max(g.xyz, l.zxy);
+                    
+                    vec3 x1 = x0 - i1 + C.xxx;
+                    vec3 x2 = x0 - i2 + C.yyy;
+                    vec3 x3 = x0 - D.yyy;
+                    
+                    i = mod289(i);
+                    vec4 p = permute(permute(permute(
+                        i.z + vec4(0.0, i1.z, i2.z, 1.0))
+                        + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+                        + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+                        
+                    float n_ = 0.142857142857;
+                    vec3 ns = n_ * D.wyz - D.xzx;
+                    
+                    vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+                    
+                    vec4 x_ = floor(j * ns.z);
+                    vec4 y_ = floor(j - 7.0 * x_);
+                    
+                    vec4 x = x_ *ns.x + ns.yyyy;
+                    vec4 y = y_ *ns.x + ns.yyyy;
+                    vec4 h = 1.0 - abs(x) - abs(y);
+                    
+                    vec4 b0 = vec4(x.xy, y.xy);
+                    vec4 b1 = vec4(x.zw, y.zw);
+                    
+                    vec4 s0 = floor(b0)*2.0 + 1.0;
+                    vec4 s1 = floor(b1)*2.0 + 1.0;
+                    vec4 sh = -step(h, vec4(0.0));
+                    
+                    vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+                    vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+                    
+                    vec3 p0 = vec3(a0.xy, h.x);
+                    vec3 p1 = vec3(a0.zw, h.y);
+                    vec3 p2 = vec3(a1.xy, h.z);
+                    vec3 p3 = vec3(a1.zw, h.w);
+                    
+                    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+                    p0 *= norm.x;
+                    p1 *= norm.y;
+                    p2 *= norm.z;
+                    p3 *= norm.w;
+                    
+                    vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+                    m = m * m;
+                    return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+                }
+                
+                float fbm(vec3 p) {
+                    float value = 0.0;
+                    float amplitude = 0.5;
+                    float frequency = 1.0;
+                    for(int i = 0; i < 5; i++) {
+                        value += amplitude * snoise(p * frequency);
+                        amplitude *= 0.5;
+                        frequency *= 2.0;
+                    }
+                    return value;
+                }
+                
+                void main() {
+                    float dist = length(vPosition) / 5.0; // 0 at center, 1 at edge
+                    
+                    // Core gradient: white at center, fading outward
+                    float coreBrightness = 1.0 - pow(dist, 1.2);
+                    
+                    // CMB texture - omnipresent noise floor
+                    // Stronger at edges (more visible when signal is weak)
+                    // But present throughout as the "grain of reality"
+                    float cmbNoise = fbm(vPosition * 3.0 + time * 0.05) * 0.5 + 0.5;
+                    float cmbIntensity = mix(0.02, 0.15, pow(dist, 2.0));
+                    float cmb = cmbNoise * cmbIntensity;
+                    
+                    // Edge dissolution - not a clean boundary
+                    // Reality doesn't end, it becomes incoherent
+                    float edgeNoise = fbm(vPosition * 8.0 + time * 0.02);
+                    float dissolutionThreshold = 0.75 + edgeNoise * 0.15;
+                    float dissolution = smoothstep(dissolutionThreshold, 1.0, dist);
+                    
+                    // Combine: core brightness + CMB texture - dissolution
+                    float brightness = coreBrightness + cmb;
+                    brightness *= (1.0 - dissolution * 0.95);
+                    
+                    // Color: warm white at center, cooling toward edge
+                    vec3 warmCore = vec3(1.0, 0.97, 0.92);
+                    vec3 coolEdge = vec3(0.7, 0.75, 0.8);
+                    vec3 voidColor = vec3(0.03, 0.03, 0.05);
+                    
+                    vec3 color = mix(warmCore, coolEdge, pow(dist, 0.8));
+                    color = color * brightness;
+                    
+                    // Add subtle CMB "glow" - the information floor
+                    vec3 cmbColor = vec3(0.9, 0.85, 0.7) * cmb * 0.3;
+                    color += cmbColor;
+                    
+                    // Edge: dissolve into static, not clean black
+                    float staticNoise = snoise(vPosition * 20.0 + time * 0.1) * 0.5 + 0.5;
+                    vec3 staticColor = vec3(staticNoise * 0.08);
+                    color = mix(color, staticColor, dissolution * 0.8);
+                    
+                    // Fresnel for depth
+                    float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.5);
+                    color += vec3(0.1, 0.15, 0.2) * fresnel * 0.15 * (1.0 - dissolution);
+                    
+                    // Alpha: fade at very edge
+                    float alpha = 1.0 - smoothstep(0.92, 1.0, dist);
+                    alpha = max(alpha, 0.1); // Never fully transparent - veil exists
+                    
+                    gl_FragColor = vec4(color, alpha);
+                }
+            `,
+            transparent: true,
+            side: THREE.FrontSide
+        });
+
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        scene.add(sphere);
+
+        // Outer haze - the transition zone
+        const hazeGeometry = new THREE.SphereGeometry(5.8, 64, 64);
+        const hazeMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 }
+            },
+            vertexShader: `
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+                void main() {
+                    vNormal = normalize(normalMatrix * normal);
+                    vPosition = position;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+                uniform float time;
+                
+                float hash(vec3 p) {
+                    p = fract(p * 0.3183099 + .1);
+                    p *= 17.0;
+                    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+                }
+                
+                void main() {
+                    float intensity = pow(0.65 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
+                    
+                    // Flickering static at the boundary
+                    float flicker = hash(vPosition + time * 0.5) * 0.3;
+                    
+                    vec3 color = vec3(0.15, 0.18, 0.22) * intensity;
+                    color += vec3(flicker * 0.05);
+                    
+                    gl_FragColor = vec4(color, intensity * 0.4);
+                }
+            `,
+            side: THREE.BackSide,
+            blending: THREE.AdditiveBlending,
+            transparent: true
+        });
+        const hazeMesh = new THREE.Mesh(hazeGeometry, hazeMaterial);
+        scene.add(hazeMesh);
+
+        // Create data point markers
+        const markers = [];
+        const markerGroup = new THREE.Group();
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        dataPoints.forEach((point, index) => {
+            // Convert Q_rel to radius (high Q = near center)
+            const radius = 4.7 * (1 - point.qrel / 100);
+            
+            // Distribute points more evenly using golden angle
+            const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+            const theta = goldenAngle * index;
+            const phi = Math.acos(1 - 2 * (index + 0.5) / dataPoints.length);
+            
+            const x = radius * Math.sin(phi) * Math.cos(theta);
+            const y = radius * Math.sin(phi) * Math.sin(theta);
+            const z = radius * Math.cos(phi);
+
+            // Marker
+            const markerGeo = new THREE.SphereGeometry(0.055, 16, 16);
+            const markerMat = new THREE.MeshBasicMaterial({ 
+                color: point.color,
+                transparent: true,
+                opacity: 0.95
+            });
+            const marker = new THREE.Mesh(markerGeo, markerMat);
+            marker.position.set(x, y, z);
+            marker.userData = point;
+            
+            markerGroup.add(marker);
+            markers.push(marker);
+
+            // Glow ring
+            const ringGeo = new THREE.RingGeometry(0.07, 0.1, 24);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: point.color,
+                transparent: true,
+                opacity: 0.25,
+                side: THREE.DoubleSide
+            });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.position.copy(marker.position);
+            ring.lookAt(0, 0, 0);
+            markerGroup.add(ring);
+        });
+
+        scene.add(markerGroup);
+
+        // Rotation group
+        const rotationGroup = new THREE.Group();
+        rotationGroup.add(sphere);
+        rotationGroup.add(hazeMesh);
+        rotationGroup.add(markerGroup);
+        scene.add(rotationGroup);
+
+        // Camera
+        camera.position.z = 12;
+        let targetZoom = 12;
+        let currentZoom = 12;
+
+        // Interaction state
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+
+        // Event handlers
+        renderer.domElement.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+            renderer.domElement.style.cursor = 'grabbing';
+        });
+
+        renderer.domElement.addEventListener('mousemove', (e) => {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            if (isDragging) {
+                const deltaX = e.clientX - previousMousePosition.x;
+                const deltaY = e.clientY - previousMousePosition.y;
+                
+                rotationGroup.rotation.y += deltaX * 0.005;
+                rotationGroup.rotation.x += deltaY * 0.005;
+                rotationGroup.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, rotationGroup.rotation.x));
+                
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            }
+
+            // Hover detection
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(markers);
+            
+            const tooltip = document.getElementById('tooltip');
+            const infoPanel = document.getElementById('info-panel');
+            
+            if (intersects.length > 0 && !isDragging) {
+                const point = intersects[0].object.userData;
+                tooltip.style.left = e.clientX + 12 + 'px';
+                tooltip.style.top = e.clientY + 12 + 'px';
+                tooltip.textContent = point.name;
+                tooltip.style.opacity = '1';
+                
+                document.getElementById('info-name').textContent = point.name;
+                document.getElementById('info-qrel').innerHTML = 'Q<sub>rel</sub>: ' + point.qrel;
+                document.getElementById('info-desc').textContent = point.desc;
+                infoPanel.classList.add('visible');
+                
+                renderer.domElement.style.cursor = 'pointer';
+            } else if (!isDragging) {
+                tooltip.style.opacity = '0';
+                infoPanel.classList.remove('visible');
+                renderer.domElement.style.cursor = 'grab';
+            }
+        });
+
+        renderer.domElement.addEventListener('mouseup', () => {
+            isDragging = false;
+            renderer.domElement.style.cursor = 'grab';
+        });
+
+        renderer.domElement.addEventListener('mouseleave', () => {
+            isDragging = false;
+            document.getElementById('tooltip').style.opacity = '0';
+        });
+
+        renderer.domElement.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            targetZoom += e.deltaY * 0.008;
+            targetZoom = Math.max(7, Math.min(18, targetZoom));
+        }, { passive: false });
+
+        // Touch support
+        let touchStartDistance = 0;
+        renderer.domElement.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            } else if (e.touches.length === 2) {
+                touchStartDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        });
+
+        renderer.domElement.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length === 1 && isDragging) {
+                const deltaX = e.touches[0].clientX - previousMousePosition.x;
+                const deltaY = e.touches[0].clientY - previousMousePosition.y;
+                rotationGroup.rotation.y += deltaX * 0.005;
+                rotationGroup.rotation.x += deltaY * 0.005;
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            } else if (e.touches.length === 2) {
+                const distance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                targetZoom -= (distance - touchStartDistance) * 0.02;
+                targetZoom = Math.max(7, Math.min(18, targetZoom));
+                touchStartDistance = distance;
+            }
+        }, { passive: false });
+
+        renderer.domElement.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Animation
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            time += 0.008;
+            sphereMaterial.uniforms.time.value = time;
+            hazeMaterial.uniforms.time.value = time;
+
+            // Smooth zoom
+            currentZoom += (targetZoom - currentZoom) * 0.08;
+            camera.position.z = currentZoom;
+
+            // Gentle auto-rotation when idle
+            if (!isDragging) {
+                rotationGroup.rotation.y += 0.0008;
+            }
+
+            // Pulse markers
+            markers.forEach((marker, i) => {
+                const pulse = 1 + Math.sin(time * 1.5 + i * 0.5) * 0.08;
+                marker.scale.setScalar(pulse);
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
