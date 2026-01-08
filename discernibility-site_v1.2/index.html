@@ -22,6 +22,7 @@
             --accent-cyan: #4ecdc4;
             --accent-warm: #f4a261;
             --accent-violet: #7c6aef;
+            --accent-gold: #FFD700;
             --border: #2a2a35;
             --gradient-veil: linear-gradient(135deg, #0a0a0f 0%, #1a1028 50%, #0f1a1a 100%);
         }
@@ -227,6 +228,165 @@
             color: var(--accent-cyan);
         }
 
+        .btn-gold {
+            background: var(--accent-gold);
+            color: var(--bg-deep);
+            border: none;
+        }
+
+        .btn-gold:hover {
+            background: var(--text-primary);
+            color: var(--bg-deep);
+        }
+
+        /* Helicoid Feature Section */
+        .helicoid-feature {
+            padding: 6rem 3rem;
+            background: linear-gradient(180deg, var(--bg-deep) 0%, #0d0d18 50%, var(--bg-deep) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .helicoid-feature::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.03) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .helicoid-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        @media (max-width: 900px) {
+            .helicoid-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        .helicoid-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .helicoid-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .helicoid-content h2 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .helicoid-content h2 em {
+            font-style: italic;
+            color: var(--accent-gold);
+        }
+
+        .helicoid-tagline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .helicoid-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+
+        .helicoid-stats {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: left;
+        }
+
+        .stat-value {
+            font-family: 'Courier New', monospace;
+            font-size: 1.4rem;
+            color: var(--accent-gold);
+            font-weight: 600;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .helicoid-visual {
+            position: relative;
+        }
+
+        .helicoid-image-link {
+            display: block;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: all 0.4s ease;
+        }
+
+        .helicoid-image-link:hover {
+            border-color: var(--accent-gold);
+            transform: scale(1.02);
+            box-shadow: 0 20px 60px rgba(255, 215, 0, 0.1);
+        }
+
+        .helicoid-image-link img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .helicoid-image-link::after {
+            content: 'Click to explore in 3D →';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: linear-gradient(to top, rgba(10, 10, 15, 0.95), transparent);
+            color: var(--accent-gold);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .helicoid-image-link:hover::after {
+            opacity: 1;
+        }
+
         /* Curve Section */
         .curve-section {
             padding: 6rem 3rem;
@@ -348,7 +508,7 @@
             text-align: center;
         }
 
-        .evidence > p {
+        .evidence-container > p {
             text-align: center;
             color: var(--text-secondary);
             margin-bottom: 3rem;
@@ -524,6 +684,7 @@
                 padding: 6rem 1.5rem 3rem;
             }
 
+            .helicoid-feature,
             .curve-section,
             .capabilities,
             .evidence,
@@ -559,8 +720,47 @@
                 Below the threshold of discernibility, reality doesn't vanish. It simply hasn't resolved yet.
             </p>
             <div class="hero-cta">
-                <a href="#postulate" class="btn btn-primary">Enter the Framework</a>
+                <a href="#helicoid" class="btn btn-primary">See the Geometry</a>
                 <a href="process-monitoring.html" class="btn btn-secondary">See It Applied</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW: Helicoid Feature Section -->
+    <section class="helicoid-feature" id="helicoid">
+        <div class="helicoid-container">
+            <div class="helicoid-content">
+                <div class="helicoid-label">New Discovery</div>
+                <h2>The Periodic Table<br>Was Never <em>Flat</em></h2>
+                <p class="helicoid-tagline">
+                    Mendeleev arranged the elements in rows and columns. 
+                    The universe arranged them on a helicoidal manifold with Carbon as the axis.
+                </p>
+                <p class="helicoid-description">
+                    The EiG framework reveals that the periodic table has an intrinsic 3D geometry. 
+                    Each period forms a ribbon twisting 30° around a central axis defined by Group 14 elements. 
+                    The structure predicts ionization energies across 118 elements with a single constant: γ = 2/3.
+                </p>
+                <div class="helicoid-stats">
+                    <div class="stat">
+                        <div class="stat-value">γ = 2/3</div>
+                        <div class="stat-label">One constant</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">R² = 0.944</div>
+                        <div class="stat-label">118 elements</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">0.376 ppm</div>
+                        <div class="stat-label">α precision</div>
+                    </div>
+                </div>
+                <a href="EiG_Helicoid.html" class="btn btn-gold">Explore the Helicoid →</a>
+            </div>
+            <div class="helicoid-visual">
+                <a href="EiG_Helicoid.html" class="helicoid-image-link">
+                    <img src="images/helicoid-topdown.png" alt="EiG Periodic Helicoid - Top-down view showing the periodic table as a helicoidal geometry">
+                </a>
             </div>
         </div>
     </section>
@@ -691,7 +891,7 @@
         <p>
             Crawford's Postulate © 2025 Jason Crawford | 
             <a href="https://osf.io/f2r7d" target="_blank">OSF Preprints</a> | 
-            <a href="mailto:contact@discernibility.org">Contact</a>
+            <a href="mailto:contact@discernibility.org">contact@discernibility.org</a>
         </p>
     </footer>
 </body>
