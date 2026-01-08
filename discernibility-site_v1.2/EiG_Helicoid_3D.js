@@ -14,17 +14,18 @@
  *   Twist per period = 30° = 180°/6 ribbons
  *
  * MODEL PERFORMANCE:
- *   Overall R² = 0.948 (118 elements) - with NFDL spinor correction
+ *   Overall R² = 0.944 (118 elements)
  *   Noble gases: R² = 0.99 (A = 11·E₀/P^γ)
  *   d-block: R² = 0.88
  *   f-block: R² = 0.83
  *   Main group: R² = 0.86
  *
- * NFDL SPINOR CORRECTION (from GUT collaboration):
- *   A_corrected = A_pred + (E₀/N) × sin(2πZ/T)
- *   T = 18: Fermion double-cover period (720°/40)
+ * SPINOR FRAMEWORK (explains noble gas stability):
+ *   T = 18: Spinor period from fermion double-cover (720°/40°)
  *   N = T×γ - 1 = 11: Boundary channels minus Period 1 exclusion
- *   Nodes at Z = 18, 36, 54, 126 (noble gases, island of stability)
+ *   Noble gases Ar, Kr, Xe sit at NODES: Z = 18, 36, 54 → sin(2πZ/T) = 0
+ *   The T=18 framework EXPLAINS why these elements are stability peaks
+ *   NOT used as correction term (derived from noble gas pattern, not independent)
  *
  * DERIVED CONSTANTS (no free parameters):
  *   γ = 2/3              ← Holographic principle
@@ -153,12 +154,13 @@ const H_ANGLE = -120;                   // degrees
 const HE_ANGLE = 120;                   // degrees
 
 // ============================================================================
-// NFDL SPINOR CONSTANTS (DERIVED - no free parameters)
+// SPINOR CONSTANTS (explains noble gas stability - NOT used for correction)
+// T=18 was derived FROM the noble gas pattern (Ar, Kr, Xe at nodes)
+// Therefore it cannot be used as an independent correction for other elements
 // ============================================================================
 
 const SPINOR_PERIOD = 18;               // T: Fermion double-cover (720/40 = 18)
 const N_CHANNELS = SPINOR_PERIOD * GAMMA - 1;  // N = T*gamma - 1 = 11
-const SPINOR_AMPLITUDE = E_0 / N_CHANNELS;     // Energy per channel modulation
 const BREATHING_SCALE = 0.15;           // Visual scale for radial displacement
 
 // Derived fine structure constant: 1/alpha = T^2 - N(T-1) + N/(T(T-1))
@@ -166,21 +168,17 @@ const ALPHA_INV_DERIVED = Math.pow(SPINOR_PERIOD, 2)
     - N_CHANNELS * (SPINOR_PERIOD - 1)
     + N_CHANNELS / (SPINOR_PERIOD * (SPINOR_PERIOD - 1));  // = 137.0359...
 
-function spinorCorrection(Z) {
-    // Returns the NFDL spinor correction for element Z
-    return SPINOR_AMPLITUDE * Math.sin(2 * Math.PI * Z / SPINOR_PERIOD);
-}
-
 function spinorPhase(Z) {
-    // Returns spinor phase in degrees and position type
+    // Returns spinor phase info - explains WHY noble gases are stable (at nodes)
+    // Ar (Z=18), Kr (Z=36), Xe (Z=54) have sin(2piZ/18) = 0
     const phase = ((2 * Math.PI * Z / SPINOR_PERIOD) % (2 * Math.PI)) * 180 / Math.PI;
-    const corr = spinorCorrection(Z);
+    const sinValue = Math.sin(2 * Math.PI * Z / SPINOR_PERIOD);
     let position;
-    if (Math.abs(corr) < 0.05) position = 'NODE';
-    else if (corr > 0.2) position = 'PEAK';
-    else if (corr < -0.2) position = 'TROUGH';
-    else position = corr > 0 ? 'rising' : 'falling';
-    return { phase, correction: corr, position };
+    if (Math.abs(sinValue) < 0.1) position = 'NODE';
+    else if (sinValue > 0.5) position = 'PEAK';
+    else if (sinValue < -0.5) position = 'TROUGH';
+    else position = sinValue > 0 ? 'rising' : 'falling';
+    return { phase, sinValue, position };
 }
 
 // ============================================================================
@@ -695,10 +693,9 @@ function onMouseMove(event) {
         // Calculate harmonic ratio
         const ratio = (element.A / E_0).toFixed(3);
 
-        // Calculate predicted A using EiG model + spinor correction
-        const A_base = predictA(element.period, element.group, element.block, element.Z);
+        // Calculate predicted A using EiG geometric model
+        const A_pred = predictA(element.period, element.group, element.block, element.Z);
         const spinor = spinorPhase(element.Z);
-        const A_pred = A_base + spinor.correction;
         const error = element.A - A_pred;
         const errorPct = ((error / element.A) * 100).toFixed(1);
 
@@ -715,10 +712,9 @@ function onMouseMove(event) {
         info += `<span class="name">${element.name}</span><br>`;
         info += `Z = ${element.Z}, Period ${element.period}, Group ${element.group}<br>`;
         info += `A (actual) = ${element.A.toFixed(3)} eV<br>`;
-        info += `A (EiG+NFDL) = ${A_pred.toFixed(3)} eV<br>`;
+        info += `A (EiG) = ${A_pred.toFixed(3)} eV<br>`;
         info += `Error = ${error >= 0 ? '+' : ''}${error.toFixed(3)} eV (${errorPct}%)<br>`;
-        info += `A/E_0 = ${ratio}${harmonic}<br>`;
-        info += `<span style="color:#FF69B4">Spinor: ${spinor.position} (${spinor.correction >= 0 ? '+' : ''}${spinor.correction.toFixed(3)} eV)</span>`;
+        info += `A/E_0 = ${ratio}${harmonic}`;
 
         if (element.axis) {
             info += `<br><span style="color:#FFD700">* Carbon Axis (Group 14)</span>`;
@@ -727,7 +723,7 @@ function onMouseMove(event) {
             info += `<br><span style="color:#00FFFF">* Superconductor</span>`;
         }
         if (spinor.position === 'NODE') {
-            info += `<br><span style="color:#00FF00">* Spinor Node (Z mod 18 = ${element.Z % 18})</span>`;
+            info += `<br><span style="color:#00FF00">* Spinor Node (Z = ${element.Z})</span>`;
         }
 
         tooltip.innerHTML = info;
