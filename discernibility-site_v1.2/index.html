@@ -46,7 +46,6 @@
             overflow-x: hidden;
         }
 
-        /* Noise texture overlay */
         body::before {
             content: '';
             position: fixed;
@@ -76,7 +75,6 @@
             color: var(--text-primary);
         }
 
-        /* Navigation */
         nav {
             position: fixed;
             top: 0;
@@ -116,15 +114,24 @@
             color: var(--text-primary);
         }
 
-        /* Hero Section */
         .hero {
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
+            align-items: center;
             padding: 8rem 3rem 4rem;
             background: var(--gradient-veil);
             position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at 70% 50%, rgba(255, 215, 0, 0.04) 0%, transparent 60%);
+            pointer-events: none;
         }
 
         .hero::after {
@@ -138,9 +145,27 @@
             pointer-events: none;
         }
 
+        .hero-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 4rem;
+            align-items: center;
+            width: 100%;
+        }
+
+        @media (max-width: 1000px) {
+            .hero-container {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+        }
+
         .hero-content {
-            max-width: 800px;
             animation: fadeUp 1s ease-out;
+            position: relative;
+            z-index: 1;
         }
 
         @keyframes fadeUp {
@@ -158,16 +183,21 @@
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.2em;
-            color: var(--accent-cyan);
+            color: var(--accent-gold);
             margin-bottom: 1.5rem;
             font-weight: 500;
         }
 
         .hero h1 {
-            font-size: clamp(3rem, 8vw, 5.5rem);
-            line-height: 1.05;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-cyan) 100%);
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-warm) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -175,18 +205,44 @@
 
         .hero-tagline {
             font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-size: clamp(1.3rem, 2.5vw, 1.6rem);
             font-style: italic;
             color: var(--text-secondary);
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
             font-weight: 400;
+            line-height: 1.5;
         }
 
         .hero-description {
-            font-size: 1.15rem;
+            font-size: 1.05rem;
             color: var(--text-secondary);
-            max-width: 600px;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 2.5rem;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: left;
+        }
+
+        .stat-value {
+            font-family: 'Courier New', monospace;
+            font-size: 1.3rem;
+            color: var(--accent-gold);
+            font-weight: 600;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         .hero-cta {
@@ -206,28 +262,6 @@
             cursor: pointer;
         }
 
-        .btn-primary {
-            background: var(--accent-cyan);
-            color: var(--bg-deep);
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background: var(--text-primary);
-            color: var(--bg-deep);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--accent-cyan);
-            color: var(--accent-cyan);
-        }
-
         .btn-gold {
             background: var(--accent-gold);
             color: var(--bg-deep);
@@ -239,125 +273,48 @@
             color: var(--bg-deep);
         }
 
-        /* Helicoid Feature Section */
-        .helicoid-feature {
-            padding: 6rem 3rem;
-            background: linear-gradient(180deg, var(--bg-deep) 0%, #0d0d18 50%, var(--bg-deep) 100%);
-            position: relative;
-            overflow: hidden;
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
         }
 
-        .helicoid-feature::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.03) 0%, transparent 70%);
-            pointer-events: none;
+        .btn-secondary:hover {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
         }
 
-        .helicoid-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
+        .btn-primary {
+            background: var(--accent-cyan);
+            color: var(--bg-deep);
+            border: none;
         }
 
-        @media (max-width: 900px) {
-            .helicoid-container {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
+        .btn-primary:hover {
+            background: var(--text-primary);
+            color: var(--bg-deep);
         }
 
-        .helicoid-content {
+        .hero-visual {
             position: relative;
             z-index: 1;
-        }
-
-        .helicoid-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            color: var(--accent-gold);
-            margin-bottom: 1rem;
-            font-weight: 500;
-        }
-
-        .helicoid-content h2 {
-            font-size: clamp(2rem, 5vw, 3rem);
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            color: var(--text-primary);
-        }
-
-        .helicoid-content h2 em {
-            font-style: italic;
-            color: var(--accent-gold);
-        }
-
-        .helicoid-tagline {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.4rem;
-            font-style: italic;
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-            line-height: 1.5;
-        }
-
-        .helicoid-description {
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-            font-size: 1rem;
-            line-height: 1.8;
-        }
-
-        .helicoid-stats {
-            display: flex;
-            gap: 2rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .stat {
-            text-align: left;
-        }
-
-        .stat-value {
-            font-family: 'Courier New', monospace;
-            font-size: 1.4rem;
-            color: var(--accent-gold);
-            font-weight: 600;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-
-        .helicoid-visual {
-            position: relative;
+            animation: fadeUp 1s ease-out 0.2s both;
         }
 
         .helicoid-image-link {
             display: block;
             position: relative;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
             border: 1px solid var(--border);
             transition: all 0.4s ease;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.5);
         }
 
         .helicoid-image-link:hover {
             border-color: var(--accent-gold);
             transform: scale(1.02);
-            box-shadow: 0 20px 60px rgba(255, 215, 0, 0.1);
+            box-shadow: 0 30px 100px rgba(255, 215, 0, 0.15);
         }
 
         .helicoid-image-link img {
@@ -367,15 +324,16 @@
         }
 
         .helicoid-image-link::after {
-            content: 'Click to explore in 3D →';
+            content: 'Explore in 3D →';
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            padding: 1rem;
+            padding: 1.5rem;
             background: linear-gradient(to top, rgba(10, 10, 15, 0.95), transparent);
             color: var(--accent-gold);
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+            font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             text-align: center;
@@ -387,7 +345,53 @@
             opacity: 1;
         }
 
-        /* Curve Section */
+        .postulate-section {
+            padding: 8rem 3rem;
+            background: var(--bg-surface);
+            position: relative;
+        }
+
+        .postulate-container {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .postulate-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--accent-cyan);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .postulate-container h2 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            line-height: 1.15;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .postulate-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-style: italic;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+
+        .postulate-description {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
         .curve-section {
             padding: 6rem 3rem;
             background: var(--bg-deep);
@@ -430,7 +434,6 @@
             font-style: italic;
         }
 
-        /* What It Does Section */
         .capabilities {
             padding: 6rem 3rem;
             background: var(--bg-surface);
@@ -491,7 +494,6 @@
             font-size: 0.95rem;
         }
 
-        /* Visual Evidence Section */
         .evidence {
             padding: 6rem 3rem;
             background: var(--bg-deep);
@@ -567,7 +569,6 @@
             color: var(--text-muted);
         }
 
-        /* Navigation Cards */
         .explore {
             padding: 6rem 3rem;
             background: var(--bg-surface);
@@ -630,7 +631,6 @@
             letter-spacing: 0.1em;
         }
 
-        /* Living Document */
         .cta-section {
             padding: 6rem 3rem;
             background: var(--gradient-veil);
@@ -653,7 +653,6 @@
             display: inline-block;
         }
 
-        /* Footer */
         footer {
             padding: 3rem;
             background: var(--bg-deep);
@@ -670,7 +669,6 @@
             color: var(--text-secondary);
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             nav {
                 padding: 1rem 1.5rem;
@@ -684,7 +682,7 @@
                 padding: 6rem 1.5rem 3rem;
             }
 
-            .helicoid-feature,
+            .postulate-section,
             .curve-section,
             .capabilities,
             .evidence,
@@ -699,7 +697,7 @@
     <nav>
         <div class="nav-brand">DISCERNIBILITY.ORG</div>
         <ul class="nav-links">
-            <li><a href="gradient.html">The Gradient</a></li>
+            <li><a href="EiG_Helicoid_3D.html">The Helicoid</a></li>
             <li><a href="postulate.html">The Postulate</a></li>
             <li><a href="implications.html">Implications</a></li>
             <li><a href="process-monitoring.html">Process Monitoring</a></li>
@@ -709,39 +707,17 @@
     </nav>
 
     <section class="hero">
-        <div class="hero-content">
-            <div class="hero-label">Crawford's Postulate</div>
-            <h1>Differences that Persist</h1>
-            <p class="hero-tagline">Energy gives Information persistence. Information gives Energy purpose.</p>
-            <p class="hero-description">
-                Energy and Information are the only fundamental properties. Their gradient—the tension between them—determines what becomes coherent, structured, observable.
-            </p>
-            <p class="hero-description">
-                Below the threshold of discernibility, reality doesn't vanish. It simply hasn't resolved yet.
-            </p>
-            <div class="hero-cta">
-                <a href="#helicoid" class="btn btn-primary">See the Geometry</a>
-                <a href="process-monitoring.html" class="btn btn-secondary">See It Applied</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- NEW: Helicoid Feature Section -->
-    <section class="helicoid-feature" id="helicoid">
-        <div class="helicoid-container">
-            <div class="helicoid-content">
-                <div class="helicoid-label">New Discovery</div>
-                <h2>The Periodic Table<br>Was Never <em>Flat</em></h2>
-                <p class="helicoid-tagline">
-                    Mendeleev arranged the elements in rows and columns. 
-                    The universe arranged them on a helicoidal manifold with Carbon as the axis.
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-label">Crawford's Postulate</div>
+                <h1>The Periodic Table<br>Was Never <em>Flat</em></h1>
+                <p class="hero-tagline">
+                    Mendeleev arranged the elements in rows. The universe arranged them on a helix with Carbon as the axis.
                 </p>
-                <p class="helicoid-description">
-                    The EiG framework reveals that the periodic table has an intrinsic 3D geometry. 
-                    Each period forms a ribbon twisting 30° around a central axis defined by Group 14 elements. 
-                    The structure predicts ionization energies across 118 elements with a single constant: γ = 2/3.
+                <p class="hero-description">
+                    The EiG framework reveals the periodic table's intrinsic 3D geometry. Each period forms a ribbon twisting 30° around a central axis. One constant—γ = 2/3—predicts ionization energies across 118 elements and derives the fine structure constant to 0.376 ppm.
                 </p>
-                <div class="helicoid-stats">
+                <div class="hero-stats">
                     <div class="stat">
                         <div class="stat-value">γ = 2/3</div>
                         <div class="stat-label">One constant</div>
@@ -755,25 +731,29 @@
                         <div class="stat-label">α precision</div>
                     </div>
                 </div>
-                <a href="EiG_Helicoid.html" class="btn btn-gold">Explore the Helicoid →</a>
+                <div class="hero-cta">
+                    <a href="EiG_Helicoid_3D.html" class="btn btn-gold">Explore the Helicoid →</a>
+                    <a href="academic.html" class="btn btn-secondary">Read the Paper</a>
+                </div>
             </div>
-            <div class="helicoid-visual">
-                <a href="EiG_Helicoid.html" class="helicoid-image-link">
-                    <img src="images/helicoid-topdown.png" alt="EiG Periodic Helicoid - Top-down view showing the periodic table as a helicoidal geometry">
+            <div class="hero-visual">
+                <a href="EiG_Helicoid_3D.html" class="helicoid-image-link">
+                    <img src="images/helicoid-topdown.png" alt="EiG Periodic Helicoid - Top-down view showing the periodic table as a helicoidal geometry with Carbon as the central axis">
                 </a>
             </div>
         </div>
     </section>
 
-    <section class="curve-section" id="postulate">
-        <div class="curve-container">
-            <div class="curve-header">
-                <h2>See the Framework</h2>
-                <p>
-                    An interactive visualization of the discernibility gradient—from black holes (maximum coherence) to cosmic voids (threshold of structure). Not a map of space, but a map of where space <em>exists</em>.
-                </p>
-                <a href="gradient.html" class="btn btn-primary" style="margin-top: 1.5rem; display: inline-block;">Enter the Gradient →</a>
-            </div>
+    <section class="postulate-section" id="postulate">
+        <div class="postulate-container">
+            <div class="postulate-label">The Foundation</div>
+            <h2>Differences that Persist</h2>
+            <p class="postulate-text">
+                "Energy gives Information persistence. Information gives Energy purpose."
+            </p>
+            <p class="postulate-description">
+                Energy and Information are the only fundamental properties. Their gradient—the tension between them—determines what becomes coherent, structured, observable. Below the threshold of discernibility, reality doesn't vanish. It simply hasn't resolved yet.
+            </p>
         </div>
     </section>
 
@@ -807,7 +787,7 @@
                     <h3>It Predicts</h3>
                     <div class="subtitle">Testable Claims</div>
                     <p>
-                        Resolves the vacuum energy catastrophe. Aligns Hubble constant measurements. Explains galactic rotation curves without invoking dark matter.
+                        Resolves the vacuum energy catastrophe. Aligns Hubble constant measurements. Derives the fine structure constant from geometry alone.
                     </p>
                 </div>
                 <div class="capability-card">
@@ -855,15 +835,15 @@
         <div class="explore-container">
             <h2>Explore the Framework</h2>
             <div class="explore-grid">
+                <a href="EiG_Helicoid_3D.html" class="explore-card">
+                    <h3>The Helicoid</h3>
+                    <p>Interactive 3D visualization of the periodic table's true geometry. Hover for element data.</p>
+                    <span class="arrow">Launch viewer →</span>
+                </a>
                 <a href="postulate.html" class="explore-card">
                     <h3>The Postulate</h3>
                     <p>The core axiom in plain language. Energy, Information, and the gradient between them.</p>
-                    <span class="arrow">Start here →</span>
-                </a>
-                <a href="implications.html" class="explore-card">
-                    <h3>Implications</h3>
-                    <p>What follows: cosmology, light behavior, the thermodynamic ratchet, origin of structure.</p>
-                    <span class="arrow">Explore →</span>
+                    <span class="arrow">Read more →</span>
                 </a>
                 <a href="process-monitoring.html" class="explore-card">
                     <h3>Process Monitoring</h3>
