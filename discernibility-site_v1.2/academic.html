@@ -18,6 +18,7 @@
             --text-muted: #6a6a6a;
             --accent-cyan: #4ecdc4;
             --accent-warm: #f4a261;
+            --accent-gold: #FFD700;
             --border: #2a2a35;
         }
 
@@ -132,10 +133,24 @@
             border-color: var(--accent-cyan);
         }
 
+        .paper-item.featured {
+            border-color: var(--accent-gold);
+            background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(255, 215, 0, 0.03) 100%);
+        }
+
+        .paper-item.featured:hover {
+            border-color: var(--accent-gold);
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.1);
+        }
+
         .paper-item h3 {
             font-size: 1.2rem;
             margin-bottom: 0.5rem;
             color: var(--text-primary);
+        }
+
+        .paper-item.featured h3 {
+            color: var(--accent-gold);
         }
 
         .paper-item .meta {
@@ -154,6 +169,10 @@
             font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+        }
+
+        .paper-item.featured .link {
+            color: var(--accent-gold);
         }
 
         .laws-summary {
@@ -196,6 +215,23 @@
             color: var(--text-primary);
         }
 
+        .link-group {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .link-group a {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .link-group a.primary {
+            color: var(--accent-gold);
+        }
+
         footer {
             padding: 3rem;
             background: var(--bg-deep);
@@ -219,7 +255,7 @@
     <nav>
         <a href="index.html" class="nav-brand">DISCERNIBILITY.ORG</a>
         <ul class="nav-links">
-            <li><a href="gradient.html">The Gradient</a></li>
+            <li><a href="EiG_Helicoid_3D.html">The Helicoid</a></li>
             <li><a href="postulate.html">The Postulate</a></li>
             <li><a href="implications.html">Implications</a></li>
             <li><a href="process-monitoring.html">Process Monitoring</a></li>
@@ -237,6 +273,21 @@
 
     <section class="section">
         <div class="container">
+            
+            <!-- Featured Technical Summary -->
+            <h2>Technical Summary</h2>
+            
+            <ul class="paper-list">
+                <li class="paper-item featured">
+                    <h3>EiG Framework: Technical Summary</h3>
+                    <div class="meta">J. Crawford · January 2026 · v1.0</div>
+                    <p>
+                        Derivation of the fine structure constant from geometric first principles. From a single axiom (γ = 2/3), the framework derives 1/α = 137.0359477 with 0.376 ppm precision—zero free parameters. Includes the complete derivation chain, ionization energy predictions (R² = 0.944), and the Koide formula connection.
+                    </p>
+                    <a href="EiG_Technical_Summary.html" class="link">Read Technical Summary →</a>
+                </li>
+            </ul>
+
             <h2>The 9 Laws</h2>
             
             <div class="laws-summary">
@@ -288,10 +339,10 @@
                 <div class="law-group">
                     <h4>Derived Constants (No Free Parameters)</h4>
                     <ul>
-                        <li><strong>gamma = 2/3:</strong> Holographic boundary/bulk ratio (derived from first principles)</li>
-                        <li><strong>T = 18:</strong> Spinor period from fermion double-cover (720 deg / 40 deg)</li>
-                        <li><strong>N = T x gamma - 1 = 11:</strong> Boundary channels minus Period 1 exclusion</li>
-                        <li><strong>E<sub>0</sub> = 3.0709 eV:</strong> Base energy scale (gamma x Carbon ionization energy)</li>
+                        <li><strong>γ = 2/3:</strong> Holographic boundary/bulk ratio (derived from first principles)</li>
+                        <li><strong>T = 18:</strong> Spinor period from fermion double-cover (720° / 40°)</li>
+                        <li><strong>N = Tγ − 1 = 11:</strong> Boundary channels minus Period 1 exclusion</li>
+                        <li><strong>E<sub>0</sub> = 3.0709 eV:</strong> Base energy scale (γ × Carbon ionization energy)</li>
                     </ul>
                 </div>
 
@@ -300,14 +351,15 @@
                     <ul>
                         <li><strong>T = 18:</strong> Noble gases Ar, Kr, Xe sit at spinor nodes (Z = 18, 36, 54)</li>
                         <li><strong>Explanation:</strong> T=18 explains WHY these elements are stability peaks</li>
-                        <li><strong>Fine structure:</strong> 1/alpha = T<sup>2</sup> - N(T-1) + N/(T(T-1)) = 137.0359...</li>
-                        <li><strong>Significance:</strong> 0.37 ppm error, derived from geometric constants</li>
+                        <li><strong>Fine structure:</strong> 1/α = T² − N(T−1) + N/(T(T−1)) = 137.0359...</li>
+                        <li><strong>Significance:</strong> 0.376 ppm error, derived from geometric constants alone</li>
                     </ul>
                 </div>
 
-                <a href="EiG_Helicoid_3D.html" class="link" style="display: inline-block; margin-top: 1rem;">
-                    Explore Interactive 3D Visualization &rarr;
-                </a>
+                <div class="link-group">
+                    <a href="EiG_Helicoid_3D.html" class="primary">Explore Interactive 3D Visualization →</a>
+                    <a href="EiG_Technical_Summary.html">Read Technical Summary →</a>
+                </div>
             </div>
 
             <h2>Preprints</h2>
