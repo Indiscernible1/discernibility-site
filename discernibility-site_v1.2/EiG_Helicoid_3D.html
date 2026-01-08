@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EiG Periodic Helicoid</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            overflow: hidden;
+            background: #0a0a1a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #ffffff;
+            background: rgba(10, 10, 30, 0.85);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+        }
+        #info h1 {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            color: #FFD700;
+        }
+        #info h2 {
+            font-size: 1em;
+            font-weight: normal;
+            color: #88aaff;
+            margin-bottom: 15px;
+        }
+        .constant {
+            font-family: 'Courier New', monospace;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+        .constant span {
+            color: #FFD700;
+        }
+        #controls {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.85em;
+            color: #aaaaaa;
+        }
+        #tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: #ffffff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            border: 1px solid #FFD700;
+            z-index: 1000;
+        }
+        #tooltip .symbol {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #FFD700;
+        }
+        #tooltip .name {
+            color: #88aaff;
+        }
+        #legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10, 10, 30, 0.85);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        #legend h3 {
+            color: #FFD700;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 0.8em;
+            color: #cccccc;
+        }
+        .legend-color {
+            width: 20px;
+            height: 10px;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+
+    <div id="info">
+        <h1>EiG Periodic Helicoid</h1>
+        <h2>Emergent information Geometry</h2>
+        <div class="constant"><span>γ</span> = 2/3 (dimensional coupling)</div>
+        <div class="constant"><span>λ₀</span> = 403.74 nm (resonance)</div>
+        <div class="constant"><span>E₀</span> = 3.071 eV (energy scale)</div>
+        <div id="controls">
+            <strong>Controls:</strong><br>
+            🖱️ Drag to rotate<br>
+            🔍 Scroll to zoom<br>
+            ⌨️ Right-drag to pan
+        </div>
+    </div>
+
+    <div id="tooltip"></div>
+
+    <div id="legend">
+        <h3>Ribbon Color</h3>
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(90deg, #4466ff, #FFD700, #ff4444);"></div>
+            Li-side → Axis → F-side
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #FFD700;"></div>
+            Carbon Axis (Group 14)
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #00FFFF;"></div>
+            Superconductors (11/5)
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script src="EiG_Helicoid_3D.js"></script>
+</body>
+</html>
