@@ -21,10 +21,19 @@
  *   Main group: R² = 0.86
  *
  * NFDL SPINOR CORRECTION (from GUT collaboration):
- *   A_corrected = A_pred + (E₀/11) × sin(2πZ/18)
+ *   A_corrected = A_pred + (E₀/N) × sin(2πZ/T)
  *   T = 18: Fermion double-cover period (720°/40)
- *   Amplitude = E₀/11: Energy per channel modulation
+ *   N = T×γ - 1 = 11: Boundary channels minus Period 1 exclusion
  *   Nodes at Z = 18, 36, 54, 126 (noble gases, island of stability)
+ *
+ * DERIVED CONSTANTS (no free parameters):
+ *   γ = 2/3              ← Holographic principle
+ *   T = 18               ← Spinor geometry (720°/40°)
+ *   N = T×γ - 1 = 11     ← Boundary channels - Period 1
+ *
+ * FINE STRUCTURE CONSTANT (derived from T and N):
+ *   1/α = T² - N(T-1) + N/(T(T-1)) = 137.0359...
+ *   Error: 0.37 ppm — NO FREE PARAMETERS
  *
  * The periodic table as a helicoid with Carbon as the axis.
  */
@@ -144,12 +153,18 @@ const H_ANGLE = -120;                   // degrees
 const HE_ANGLE = 120;                   // degrees
 
 // ============================================================================
-// NFDL SPINOR CONSTANTS (from GUT collaboration)
+// NFDL SPINOR CONSTANTS (DERIVED - no free parameters)
 // ============================================================================
 
-const SPINOR_PERIOD = 18;               // Fermion double-cover: 720/40 = 18
-const SPINOR_AMPLITUDE = E_0 / 11;      // Energy per channel modulation
+const SPINOR_PERIOD = 18;               // T: Fermion double-cover (720/40 = 18)
+const N_CHANNELS = SPINOR_PERIOD * GAMMA - 1;  // N = T*gamma - 1 = 11
+const SPINOR_AMPLITUDE = E_0 / N_CHANNELS;     // Energy per channel modulation
 const BREATHING_SCALE = 0.15;           // Visual scale for radial displacement
+
+// Derived fine structure constant: 1/alpha = T^2 - N(T-1) + N/(T(T-1))
+const ALPHA_INV_DERIVED = Math.pow(SPINOR_PERIOD, 2)
+    - N_CHANNELS * (SPINOR_PERIOD - 1)
+    + N_CHANNELS / (SPINOR_PERIOD * (SPINOR_PERIOD - 1));  // = 137.0359...
 
 function spinorCorrection(Z) {
     // Returns the NFDL spinor correction for element Z
