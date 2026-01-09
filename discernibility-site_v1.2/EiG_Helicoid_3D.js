@@ -444,6 +444,27 @@ function init() {
     // Events
     window.addEventListener('resize', onWindowResize);
     window.addEventListener('mousemove', onMouseMove);
+window.addEventListener('click', onMouseClick);
+
+function onMouseClick(event) {
+    // Check if Hardness Explorer is active
+    if (typeof HardnessExplorer !== 'undefined' && HardnessExplorer.enabled) {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(elementMeshes);
+
+        if (intersects.length > 0) {
+            const element = intersects[0].object.userData;
+            const mesh = intersects[0].object;
+
+            if (typeof selectElementForHardness !== 'undefined') {
+                selectElementForHardness(element, mesh);
+            }
+        }
+    }
+}
 
     // Start animation
     animate();
@@ -842,18 +863,43 @@ function createInfoPanel() {
             <span style="color:#aaa">118 elements from γ=2/3, T=18, N=11</span>
         </div>
         <div style="border-top:1px solid #444;padding-top:8px;margin-top:8px">
-            <div style="color:#FFA500;margin-bottom:5px">Phase-Slip Categories:</div>
-            <div><span style="color:#00FF00">■</span> Locked (&lt;5%) - Geometry dominates</div>
-            <div><span style="color:#FFFF00">■</span> Drift (5-10%) - Minor metric drag</div>
-            <div><span style="color:#FFA500">■</span> Slip (10-20%) - Relativistic effects</div>
-            <div><span style="color:#FF4444">■</span> Veil Leak (&gt;20%) - Manifold fatigue</div>
+            <div style="color:#FFA500;margin-bottom:5px">
+                Phase-Slip (Δψ) Categories 
+                <span id="phase-slip-toggle" style="cursor:pointer;color:#88aaff;font-size:0.9em">[?]</span>
+            </div>
+            <div><span style="color:#00FF00">■</span> Locked (&lt;5%)</div>
+            <div><span style="color:#FFFF00">■</span> Drift (5-10%)</div>
+            <div><span style="color:#FFA500">■</span> Slip (10-20%)</div>
+            <div><span style="color:#FF4444">■</span> Veil Leak (&gt;20%)</div>
         </div>
-        <div style="border-top:1px solid #444;padding-top:8px;margin-top:8px;color:#888;font-size:11px">
-            High-Z translucency = information leaking to Template Sheet.
-            Period 7 deviations are the <em>signature</em> of structural failure,
-            not model error. The geometry predicts its own breakdown.
+        <div id="phase-slip-explainer" style="display:none;border-top:1px solid #444;padding-top:10px;margin-top:10px;font-size:11px;line-height:1.5">
+            <div style="color:#FFD700;margin-bottom:8px">Why Phase-Slip is a Feature, Not a Bug</div>
+            <div style="color:#ccc;margin-bottom:8px">
+                Phase-Slip is <b>Topological Tension</b>—the potential energy stored in 
+                the vacuum's geometry. It drives all chemical bonding and physical interaction.
+            </div>
+            <div style="color:#aaa;margin-bottom:6px">
+                <span style="color:#00FF00">● Low Δψ</span> = Stable, inert (noble gases lock to geometry)
+            </div>
+            <div style="color:#aaa;margin-bottom:6px">
+                <span style="color:#FF4444">● High Δψ</span> = Reactive, wants to bond (alkalis seek partners)
+            </div>
+            <div style="color:#888;margin-top:10px;font-style:italic">
+                The model doesn't fail at Francium—it predicts the exact energy cost 
+                of existence at the manifold's edge. High-Z "errors" are the signature 
+                of structural failure, measured in eV.
+            </div>
         </div>
     `;
+    
+    // Toggle explainer visibility
+    document.getElementById('phase-slip-toggle').addEventListener('click', function() {
+        const explainer = document.getElementById('phase-slip-explainer');
+        const isHidden = explainer.style.display === 'none';
+        explainer.style.display = isHidden ? 'block' : 'none';
+        this.textContent = isHidden ? '[−]' : '[?]';
+        this.style.color = isHidden ? '#FFD700' : '#88aaff';
+    });
     
     document.body.appendChild(panel);
 }
