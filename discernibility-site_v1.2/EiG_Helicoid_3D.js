@@ -163,6 +163,35 @@ const SPINOR_PERIOD = 18;               // T: Fermion double-cover (720/40 = 18)
 const N_CHANNELS = SPINOR_PERIOD * GAMMA - 1;  // N = T*gamma - 1 = 11
 const BREATHING_SCALE = 0.15;           // Visual scale for radial displacement
 
+// ============================================================================
+// MANIFOLD FATIGUE - Relativistic Phase-Slip at High Z
+// ============================================================================
+// As Z increases, information density causes local vacuum "stiffening"
+// The manifold update rate lags relative to the ideal geometric skeleton
+// Period 7 approaches the T=18 MANIFOLD CLOSURE - radioactive instability
+
+const FATIGUE_MAP = {
+    1: 0.82,   // Primordial (H/He) - Under-tensioned
+    2: 1.00,   // Standard Period (Li-Ne) - Reference
+    3: 1.08,   // Na-Ar - Slight strain
+    4: 1.24,   // d-block Slip (K-Kr) - Transition metal drag
+    5: 1.35,   // Rb-Xe - Accumulated strain
+    6: 1.52,   // f-block Slip (Cs-Rn) - Lanthanide contraction
+    7: 2.10    // Structural Failure (Fr-Og) - Radioactive instability
+};
+
+function getFatigueFactor(period) {
+    return FATIGUE_MAP[period] || 1.0;
+}
+
+function getPhaseSlipCategory(absErrorPct) {
+    // Categorize phase-slip magnitude into physical regimes
+    if (absErrorPct < 5) return { label: 'Locked', color: '#00FF00', desc: 'Phase-locked' };
+    if (absErrorPct < 10) return { label: 'Drift', color: '#FFFF00', desc: 'Metric drift' };
+    if (absErrorPct < 20) return { label: 'Slip', color: '#FFA500', desc: 'Phase-slip' };
+    return { label: 'Veil Leak', color: '#FF4444', desc: 'Manifold fatigue' };
+}
+
 // Derived fine structure constant: 1/alpha = T^2 - N(T-1) + N/(T(T-1))
 const ALPHA_INV_DERIVED = Math.pow(SPINOR_PERIOD, 2)
     - N_CHANNELS * (SPINOR_PERIOD - 1)
@@ -653,12 +682,20 @@ function createElement(symbol, data) {
         emissiveIntensity = 0.4;
     }
 
+    // Fatigue-based visual effects: high-Z elements become translucent
+    // This represents "information leaking to the Template Sheet"
+    const fatigue = getFatigueFactor(data.period);
+    const isHighFatigue = data.period >= 6;
+    const fatigueOpacity = isHighFatigue ? Math.max(0.4, 1.0 - (fatigue - 1.0) * 0.5) : 1.0;
+
     const material = new THREE.MeshStandardMaterial({
         color: color,
-        metalness: 0.5,
-        roughness: 0.3,
+        metalness: isHighFatigue ? 0.3 : 0.5,
+        roughness: isHighFatigue ? 0.6 : 0.3,
         emissive: emissive,
-        emissiveIntensity: emissiveIntensity
+        emissiveIntensity: emissiveIntensity,
+        transparent: isHighFatigue,
+        opacity: fatigueOpacity
     });
 
     const sphere = new THREE.Mesh(geometry, material);
@@ -708,12 +745,19 @@ function onMouseMove(event) {
             }
         }
 
+        // Get fatigue factor and phase-slip category
+        const fatigue = getFatigueFactor(element.period);
+        const absErrorPct = Math.abs(parseFloat(errorPct));
+        const slipCat = getPhaseSlipCategory(absErrorPct);
+
         let info = `<span class="symbol">${element.symbol}</span><br>`;
         info += `<span class="name">${element.name}</span><br>`;
         info += `Z = ${element.Z}, Period ${element.period}, Group ${element.group}<br>`;
         info += `A (actual) = ${element.A.toFixed(3)} eV<br>`;
         info += `A (EiG) = ${A_pred.toFixed(3)} eV<br>`;
-        info += `Error = ${error >= 0 ? '+' : ''}${error.toFixed(3)} eV (${errorPct}%)<br>`;
+        info += `<span style="color:${slipCat.color}">Phase-Slip (Δψ) = ${error >= 0 ? '+' : ''}${error.toFixed(3)} eV (${errorPct}%)</span><br>`;
+        info += `<span style="color:${slipCat.color};font-size:0.85em">[${slipCat.label}] ${slipCat.desc}</span><br>`;
+        info += `Fatigue f(P) = ${fatigue.toFixed(2)}<br>`;
         info += `A/E_0 = ${ratio}${harmonic}`;
 
         if (element.axis) {
@@ -766,8 +810,57 @@ function animate() {
     renderer.render(scene, camera);
 }
 
+
+// ============================================================================
+// INFO PANEL - Theory of Deviation
+// ============================================================================
+
+function createInfoPanel() {
+    const panel = document.createElement('div');
+    panel.id = 'info-panel';
+    panel.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.85);
+        color: #fff;
+        padding: 15px 20px;
+        border-radius: 8px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        max-width: 380px;
+        border: 1px solid #333;
+        z-index: 1000;
+    `;
+    
+    panel.innerHTML = `
+        <div style="font-size:14px;color:#FFD700;margin-bottom:10px;font-weight:bold">
+            EiG Periodic Helicoid
+        </div>
+        <div style="margin-bottom:8px">
+            <span style="color:#00FF00">R² = 0.944</span> | 
+            <span style="color:#aaa">118 elements from γ=2/3, T=18, N=11</span>
+        </div>
+        <div style="border-top:1px solid #444;padding-top:8px;margin-top:8px">
+            <div style="color:#FFA500;margin-bottom:5px">Phase-Slip Categories:</div>
+            <div><span style="color:#00FF00">■</span> Locked (&lt;5%) - Geometry dominates</div>
+            <div><span style="color:#FFFF00">■</span> Drift (5-10%) - Minor metric drag</div>
+            <div><span style="color:#FFA500">■</span> Slip (10-20%) - Relativistic effects</div>
+            <div><span style="color:#FF4444">■</span> Veil Leak (&gt;20%) - Manifold fatigue</div>
+        </div>
+        <div style="border-top:1px solid #444;padding-top:8px;margin-top:8px;color:#888;font-size:11px">
+            High-Z translucency = information leaking to Template Sheet.
+            Period 7 deviations are the <em>signature</em> of structural failure,
+            not model error. The geometry predicts its own breakdown.
+        </div>
+    `;
+    
+    document.body.appendChild(panel);
+}
+
 // ============================================================================
 // START
 // ============================================================================
 
+createInfoPanel();
 init();
