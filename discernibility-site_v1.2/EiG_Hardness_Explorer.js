@@ -784,12 +784,20 @@ function initHardnessExplorer() {
     console.log('Materials Property Explorer initialized');
 }
 
-// Auto-init when DOM ready
+// Auto-init when DOM ready (wrapped in try-catch to prevent breaking main viz)
+function safeInitHardnessExplorer() {
+    try {
+        initHardnessExplorer();
+    } catch (e) {
+        console.error('Materials Explorer init error:', e);
+    }
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initHardnessExplorer);
+    document.addEventListener('DOMContentLoaded', safeInitHardnessExplorer);
 } else {
     // Small delay to ensure main script loaded
-    setTimeout(initHardnessExplorer, 100);
+    setTimeout(safeInitHardnessExplorer, 100);
 }
 
 // Export for use in main script
