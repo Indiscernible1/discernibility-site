@@ -476,10 +476,118 @@ function createCentralAxis() {
 }
 
 // ============================================================================
+// CREATE PRIMORDIAL ARC (Period 1: H-He)
+// ============================================================================
+// The arc spans 240° (= γ × 360°) from H at -120° to He at +120°
+// The missing 120° wedge is where the Carbon axis emerges
+
+function createPrimordialArc() {
+    const radius = 0.8;  // Same as Period 1 element positions
+    const z = (1 - 4) * 0.8;  // Same z as H and He
+    const segments = 60;
+    
+    // Arc from -120° to +120° (going through 0°, i.e., the short way)
+    const startAngle = -Math.PI * (2/3);  // -120°
+    const endAngle = Math.PI * (2/3);      // +120°
+    
+    // Create arc points
+    const points = [];
+    for (let i = 0; i <= segments; i++) {
+        const t = i / segments;
+        const angle = startAngle + t * (endAngle - startAngle);
+        points.push(new THREE.Vector3(
+            radius * Math.cos(angle),
+            radius * Math.sin(angle),
+            z
+        ));
+    }
+    
+    // Create a tube along the arc path for visibility
+    const curve = new THREE.CatmullRomCurve3(points);
+    const tubeGeometry = new THREE.TubeGeometry(curve, segments, 0.025, 8, false);
+    
+    // Gradient material: H-side (white) → center (gold) → He-side (cyan)
+    const colors = [];
+    const positions = tubeGeometry.attributes.position;
+    for (let i = 0; i < positions.count; i++) {
+        const x = positions.getX(i);
+        const y = positions.getY(i);
+        const angle = Math.atan2(y, x);
+        const t = (angle - startAngle) / (endAngle - startAngle);
+        
+        let r, g, b;
+        if (t < 0.5) {
+            // H-side (white/light blue) to center (gold)
+            const s = t * 2;
+            r = 1.0;
+            g = 1.0 - 0.16 * s;
+            b = 1.0 - 0.73 * s;
+        } else {
+            // Center (gold) to He-side (cyan)
+            const s = (t - 0.5) * 2;
+            r = 1.0 - 0.69 * s;
+            g = 0.84 + 0.16 * s;
+            b = 0.27 + 0.73 * s;
+        }
+        colors.push(r, g, b);
+    }
+    tubeGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    
+    const arcMaterial = new THREE.MeshBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.7
+    });
+    
+    const arc = new THREE.Mesh(tubeGeometry, arcMaterial);
+    scene.add(arc);
+    
+    // Add glow effect
+    const glowGeometry = new THREE.TubeGeometry(curve, segments, 0.04, 8, false);
+    const glowMaterial = new THREE.MeshBasicMaterial({
+        color: 0xFFD700,
+        transparent: true,
+        opacity: 0.15
+    });
+    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+    scene.add(glow);
+    
+    // Add small markers at the "missing wedge" endpoints to show where axis would be
+    // These mark the 120° gap where Carbon's axis emerges
+    const markerGeometry = new THREE.SphereGeometry(0.03, 16, 16);
+    const markerMaterial = new THREE.MeshBasicMaterial({
+        color: 0xFFD700,
+        transparent: true,
+        opacity: 0.5
+    });
+    
+    // Marker at +120° (He side, edge of gap)
+    const marker1 = new THREE.Mesh(markerGeometry, markerMaterial);
+    marker1.position.set(
+        radius * Math.cos(endAngle),
+        radius * Math.sin(endAngle),
+        z
+    );
+    scene.add(marker1);
+    
+    // Marker at -120° (H side, edge of gap)
+    const marker2 = new THREE.Mesh(markerGeometry, markerMaterial);
+    marker2.position.set(
+        radius * Math.cos(startAngle),
+        radius * Math.sin(startAngle),
+        z
+    );
+    scene.add(marker2);
+}
+
+// ============================================================================
 // CREATE RIBBONS
 // ============================================================================
 
 function createRibbons() {
+    // First create the Primordial Arc for Period 1
+    createPrimordialArc();
+    
     const ribbonMaterial = new THREE.MeshStandardMaterial({
         color: 0x4444ff,
         metalness: 0.3,
