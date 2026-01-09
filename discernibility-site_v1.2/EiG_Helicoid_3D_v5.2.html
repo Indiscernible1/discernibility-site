@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EiG Periodic Helicoid v5.2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            overflow: hidden;
+            background: #0a0a1a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #ffffff;
+            background: rgba(10, 10, 30, 0.85);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            max-width: 320px;
+            backdrop-filter: blur(10px);
+        }
+        #info h1 {
+            font-size: 1.4em;
+            margin-bottom: 5px;
+            color: #FFD700;
+        }
+        #info .version {
+            font-size: 0.85em;
+            color: #00FF00;
+            margin-bottom: 10px;
+        }
+        #info h2 {
+            font-size: 1em;
+            font-weight: normal;
+            color: #88aaff;
+            margin-bottom: 15px;
+        }
+        .constant {
+            font-family: 'Courier New', monospace;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+        .constant span {
+            color: #FFD700;
+        }
+        .constant .derived {
+            color: #00FF00;
+            font-size: 0.85em;
+        }
+        #controls {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.85em;
+            color: #aaaaaa;
+        }
+        #tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: #ffffff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            display: none;
+            border: 1px solid #FFD700;
+            z-index: 1000;
+            max-width: 320px;
+            line-height: 1.4;
+        }
+        #tooltip .symbol {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #FFD700;
+        }
+        #tooltip .name {
+            color: #88aaff;
+        }
+        #legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10, 10, 30, 0.85);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        #legend h3 {
+            color: #FFD700;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 0.8em;
+            color: #cccccc;
+        }
+        .legend-color {
+            width: 20px;
+            height: 10px;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+        .legend-section {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .legend-section h4 {
+            color: #88aaff;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+
+    <div id="info">
+        <h1>EiG Periodic Helicoid</h1>
+        <div class="version">v5.2 — Geometric Foundation</div>
+        <h2>Emergent information Geometry</h2>
+        <div class="constant">
+            <span>γ</span> = 2/3 <span class="derived">(exact)</span>
+        </div>
+        <div class="constant">
+            <span>E₀</span> = 3.0709 eV <span class="derived">(cosmic resonance)</span>
+        </div>
+        <div class="constant">
+            <span>A_C</span> = 11.26 eV <span class="derived">(Carbon axis)</span>
+        </div>
+        <div class="constant">
+            <span>λ₀</span> = 403.74 nm <span class="derived">(resonance pitch)</span>
+        </div>
+        <div class="constant">
+            <span>T</span> = 18 <span class="derived">(spinor period)</span>
+        </div>
+        <div id="controls">
+            <strong>Controls:</strong><br>
+            🖱️ Drag to rotate<br>
+            🔍 Scroll to zoom<br>
+            ⌨️ Right-drag to pan
+        </div>
+    </div>
+
+    <div id="tooltip"></div>
+
+    <div id="legend">
+        <h3>Ribbon Color</h3>
+        <div class="legend-item">
+            <div class="legend-color" style="background: linear-gradient(90deg, #4466ff, #FFD700, #ff4444);"></div>
+            Li-side → Axis → F-side
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #FFD700;"></div>
+            Carbon Axis (Group 14)
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #00FFFF;"></div>
+            Superconductors (11/5)
+        </div>
+        
+        <div class="legend-section">
+            <h4>Symmetry Order (n)</h4>
+            <div class="legend-item">n=1: s-block (Primordial)</div>
+            <div class="legend-item">n=3: p-block (sp³ Tetrahedral)</div>
+            <div class="legend-item">n=5: d-block (Penta-symmetry)</div>
+            <div class="legend-item">n=7: f-block (Septa-symmetry)</div>
+            <div class="legend-item">n=0: Noble (Sealed vortex)</div>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- EiG v5.2 Geometric Foundation -->
+    <script src="EiG_Helicoid_3D_v5.2.js"></script>
+    
+    <!-- Optional: Hardness Explorer -->
+    <!-- <script src="EiG_Hardness_Explorer.js"></script> -->
+</body>
+</html>
