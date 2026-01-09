@@ -892,7 +892,9 @@ function createInfoPanel() {
         </div>
     `;
     
-    // Toggle explainer visibility
+    document.body.appendChild(panel);
+
+    // Toggle explainer visibility (must be after appendChild)
     document.getElementById('phase-slip-toggle').addEventListener('click', function() {
         const explainer = document.getElementById('phase-slip-explainer');
         const isHidden = explainer.style.display === 'none';
@@ -900,8 +902,6 @@ function createInfoPanel() {
         this.textContent = isHidden ? '[−]' : '[?]';
         this.style.color = isHidden ? '#FFD700' : '#88aaff';
     });
-    
-    document.body.appendChild(panel);
 }
 
 // ============================================================================
