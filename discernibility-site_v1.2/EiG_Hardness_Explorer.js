@@ -1,6 +1,6 @@
 /**
- * EiG Hardness Explorer - Interactive Compound Predictor
- * ========================================================
+ * EiG Materials Property Explorer - Interactive Compound Predictor
+ * =================================================================
  *
  * Allows users to select elements and see predicted material properties
  * based on Metric Torque balancing and derived electronegativity.
@@ -8,22 +8,31 @@
  * PREDICTION ENGINE:
  *   tau_net = Sum of Metric Torques (phase-slip balancing)
  *   omega_EiG = Derived electronegativity from helicoid position
- *   H = Hardness from covalent character and torque resonance
+ *
+ * PROPERTIES PREDICTED:
+ *   - Hardness (GPa) - from covalent character and torque resonance
+ *   - Thermal Conductivity - inverse impedance (resonance = high conductivity)
+ *   - Electrical Conductivity - metallic character + stability
+ *   - Melting Point - tension energy storage
+ *   - Stability Score - geometric resonance measure
  *
  * Add this script after EiG_Helicoid_3D.js
  */
 
 // ============================================================================
-// HARDNESS EXPLORER STATE
+// MATERIALS EXPLORER STATE
 // ============================================================================
 
-const HardnessExplorer = {
+const MaterialsExplorer = {
     enabled: false,
     selectedElements: [],
     maxSelections: 4,
     panel: null,
     bondLines: [],
 };
+
+// Backwards compatibility alias
+const HardnessExplorer = MaterialsExplorer;
 
 // ============================================================================
 // ELEMENT PROPERTY CALCULATIONS
@@ -205,6 +214,185 @@ function predictCompoundProperties(elements) {
     // Scale to approximate Vickers GPa (Diamond = 100)
     const H_scaled = H_raw * 8.9;
 
+    // =========================================================================
+    // THERMAL CONDUCTIVITY: Inverse impedance - resonance = high conductivity
+    // Diamond: ~2000 W/mK, Copper: ~400, Steel: ~50, Glass: ~1
+    // =========================================================================
+    const tau_impedance = Math.abs(tau_net) + 0.1;  // Avoid div/0
+    let thermal_base = (stability * 100) / tau_impedance;
+
+    // Covalent networks conduct heat well (phonons)
+    if (cov_avg > 0.7) {
+        thermal_base *= 3.0 * axis_bonus;  // Diamond effect
+    }
+    // Metals conduct via electrons
+    else if (cov_avg < 0.2) {
+        thermal_base *= 2.0;
+    }
+    // Period penalty: longer bonds = lower conductivity
+    thermal_base /= Math.pow(P_max, 0.5);
+
+    const thermal_conductivity = Math.min(thermal_base * 20, 2500);  // Cap at diamond-like
+
+    // =========================================================================
+    // ELECTRICAL CONDUCTIVITY: Metallic character + stability
+    // Scale: 0-100 (100 = excellent conductor like Cu/Ag)
+    // =========================================================================
+    const metallic_char = 1 - cov_avg;  // Inverse of covalent
+    let electrical_base = metallic_char * stability * 100;
+
+    // d-block elements are good conductors
+    if (has_dblock && !has_pblock_covalent) {
+        electrical_base *= 1.5;
+    }
+    // Covalent networks are insulators (unless doped)
+    if (cov_avg > 0.8) {
+        electrical_base *= 0.01;  // Insulators
+    }
+    // Semiconductors (Si, Ge)
+    else if (cov_avg > 0.5 && elements.some(e => e.group === 14 && e.period > 2)) {
+        electrical_base *= 0.3;  // Semiconductor
+    }
+
+    const electrical_conductivity = Math.min(electrical_base, 100);
+
+    // =========================================================================
+    // MELTING POINT: Tension energy storage
+    // Scale: Kelvin (C: 3823K, W: 3695K, Fe: 1811K, Na: 371K)
+    // =========================================================================
+    const tension_energy = Math.pow(tau_net, 2) + 0.5;  // Stored tension
+    let melting_base = tension_energy * A_avg * 50;
+
+    // Covalent networks have very high melting points
+    if (cov_avg > 0.7) {
+        melting_base *= 2.5 * axis_bonus;
+    }
+    // Refractory metals (W, Os, Ta)
+    else if (cov_avg < 0.2 && max_fatigue > 1.4) {
+        melting_base *= 2.0 * Math.pow(max_fatigue, 1.2);
+    }
+    // s-block metals have low melting points
+    else if (cov_avg < 0.1 && !has_dblock) {
+        melting_base *= 0.3;
+    }
+
+    const melting_point = Math.min(melting_base, 4500);  // Cap at realistic max
+
+    // =========================================================================
+    // RESISTIVITY: |tau_net| + fatigue factor
+    // Scale: 0-100 (0 = superconductor, 100 = insulator)
+    // =========================================================================
+    let resistivity = Math.abs(tau_net) * 10 + (max_fatigue - 1) * 20;
+    // Covalent networks are highly resistive
+    if (cov_avg > 0.8) {
+        resistivity = 95 + Math.random() * 5;  // Near max
+    }
+    // Metals are low resistivity
+    else if (cov_avg < 0.2) {
+        resistivity = Math.max(5, resistivity * 0.3);
+    }
+    resistivity = Math.min(100, Math.max(0, resistivity));
+
+    // =========================================================================
+    // DUCTILITY: Negative tau = metric relaxation = ductile
+    // Scale: 0-100 (0 = brittle, 100 = highly ductile)
+    // =========================================================================
+    let ductility;
+    if (tau_net < -0.5) {
+        // Negative torque = metric relaxation = ductile
+        ductility = 60 + Math.min(40, Math.abs(tau_net) * 15);
+    } else if (tau_net > 0.5) {
+        // Positive torque = tension = brittle
+        ductility = Math.max(5, 40 - tau_net * 10);
+    } else {
+        // Near resonance = moderate
+        ductility = 50;
+    }
+    // Covalent networks are brittle
+    if (cov_avg > 0.7) {
+        ductility *= 0.2;
+    }
+    // Metals are ductile
+    else if (cov_avg < 0.2) {
+        ductility = Math.min(95, ductility * 1.5);
+    }
+    ductility = Math.min(100, Math.max(0, ductility));
+
+    // =========================================================================
+    // CORROSION RESISTANCE: Stability × noble character (angular position)
+    // Noble gases at theta=90, alkalis at theta=-90
+    // Scale: 0-100 (0 = highly reactive, 100 = inert)
+    // =========================================================================
+    let noble_sum = 0;
+    elements.forEach(elem => {
+        const theta = getAngleFromGroup(elem.group);
+        const noble_char = (theta + 90) / 180;  // 0 for alkali, 1 for noble gas side
+        noble_sum += noble_char;
+    });
+    const noble_avg = noble_sum / n;
+    let corrosion_resistance = stability * 50 + noble_avg * 50;
+    // Noble metals (Au, Pt region) get bonus
+    if (cov_avg < 0.2 && max_fatigue > 1.3 && noble_avg > 0.4) {
+        corrosion_resistance *= 1.3;
+    }
+    corrosion_resistance = Math.min(100, Math.max(0, corrosion_resistance));
+
+    // =========================================================================
+    // DENSITY: Z/volume, volume ~ period³
+    // Scale: g/cm³ (Li ~0.5, Fe ~7.9, Os ~22.6)
+    // =========================================================================
+    let Z_sum = 0;
+    let volume_sum = 0;
+    elements.forEach(elem => {
+        Z_sum += elem.Z;
+        // Atomic volume scales roughly with period cubed
+        volume_sum += Math.pow(elem.period, 2.5);
+    });
+    const density = (Z_sum / volume_sum) * 2.5;  // Scale factor
+
+    // =========================================================================
+    // MAGNETIC PROPERTIES: Spinor phase position (d-block with unpaired electrons)
+    // Scale: 0-100 (0 = diamagnetic, 50 = paramagnetic, 100 = ferromagnetic)
+    // =========================================================================
+    let magnetic = 10;  // Default diamagnetic
+    const magnetic_elements = ['Fe', 'Co', 'Ni', 'Mn', 'Cr'];
+    const paramagnetic_elements = ['Ti', 'V', 'Cu', 'O'];
+
+    elements.forEach(elem => {
+        if (magnetic_elements.includes(elem.symbol)) {
+            magnetic = Math.max(magnetic, 80 + Math.random() * 20);  // Ferromagnetic
+        } else if (paramagnetic_elements.includes(elem.symbol)) {
+            magnetic = Math.max(magnetic, 40 + Math.random() * 20);  // Paramagnetic
+        } else if (elem.group >= 3 && elem.group <= 12) {
+            magnetic = Math.max(magnetic, 25);  // d-block tends paramagnetic
+        }
+    });
+    // Compounds dilute magnetism
+    if (n > 1 && magnetic > 50) {
+        magnetic *= 0.7;
+    }
+
+    // =========================================================================
+    // BANDGAP / OPTICAL: Distance from resonance ridge
+    // Scale: eV (0 = metal/conductor, 1-3 = semiconductor, >5 = insulator)
+    // =========================================================================
+    let bandgap;
+    if (cov_avg < 0.2) {
+        bandgap = 0;  // Metals have no bandgap
+    } else if (cov_avg > 0.8) {
+        // Covalent insulators: large bandgap
+        bandgap = 4 + Math.abs(tau_net) * 0.5;
+    } else {
+        // Semiconductors: bandgap from resonance distance
+        const resonance_distance = Math.abs(tau_net);
+        bandgap = 0.5 + resonance_distance * 1.5;
+        // Si, Ge have ~1.1, 0.7 eV bandgaps
+        if (elements.some(e => e.group === 14 && e.period > 2)) {
+            bandgap = Math.max(0.7, Math.min(1.5, bandgap));
+        }
+    }
+    bandgap = Math.min(10, Math.max(0, bandgap));
+
     // Stability class
     let stabilityClass;
     if (Math.abs(tau_net) < 0.3) {
@@ -225,14 +413,36 @@ function predictCompoundProperties(elements) {
         bondType = 'Metallic';
     }
 
+    // Conductor class
+    let conductorClass;
+    if (electrical_conductivity > 50) {
+        conductorClass = 'Conductor';
+    } else if (electrical_conductivity > 5) {
+        conductorClass = 'Semiconductor';
+    } else {
+        conductorClass = 'Insulator';
+    }
+
     return {
         formula: elements.map(e => e.symbol).join(''),
         tau_net: tau_net,
         omega_avg: omega_avg,
         stability: stability,
         stabilityClass: stabilityClass,
+        // 10 Material Properties
         hardness: H_scaled,
+        thermalConductivity: thermal_conductivity,
+        electricalConductivity: electrical_conductivity,
+        meltingPoint: melting_point,
+        resistivity: resistivity,
+        ductility: ductility,
+        corrosionResistance: corrosion_resistance,
+        density: density,
+        magnetic: magnetic,
+        bandgap: bandgap,
+        // Classification
         bondType: bondType,
+        conductorClass: conductorClass,
         covalentChar: cov_avg,
         binaryStretch: binary_stretch,
         details: details
@@ -250,13 +460,15 @@ function createHardnessPanel() {
         position: fixed;
         top: 20px;
         right: 20px;
-        background: rgba(0, 0, 0, 0.9);
+        background: rgba(0, 0, 0, 0.95);
         color: #fff;
         padding: 15px 20px;
         border-radius: 8px;
         font-family: 'Courier New', monospace;
         font-size: 12px;
-        min-width: 280px;
+        min-width: 320px;
+        max-height: 90vh;
+        overflow-y: auto;
         border: 1px solid #FFD700;
         z-index: 1000;
         display: none;
@@ -264,7 +476,7 @@ function createHardnessPanel() {
 
     panel.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <span style="color:#FFD700;font-weight:bold">Hardness Explorer</span>
+            <span style="color:#FFD700;font-weight:bold">Materials Property Explorer</span>
             <span id="he-toggle" style="cursor:pointer;color:#888">[x]</span>
         </div>
         <div style="color:#888;margin-bottom:10px;font-size:11px">
@@ -278,7 +490,7 @@ function createHardnessPanel() {
     `;
 
     document.body.appendChild(panel);
-    HardnessExplorer.panel = panel;
+    MaterialsExplorer.panel = panel;
 
     // Event handlers
     document.getElementById('he-toggle').addEventListener('click', toggleHardnessExplorer);
@@ -430,47 +642,115 @@ function updateHardnessPanel() {
     let stabColor = pred.stability > 0.8 ? '#00FF00' :
                     pred.stability > 0.5 ? '#FFFF00' : '#FF4444';
 
-    // Hardness color (scaled 0-100)
-    let hardColor = pred.hardness > 50 ? '#00FF00' :
-                    pred.hardness > 20 ? '#FFFF00' :
-                    pred.hardness > 5 ? '#FFA500' : '#888';
+    // Color helper function
+    const getColor = (val, thresholds, colors) => {
+        for (let i = 0; i < thresholds.length; i++) {
+            if (val > thresholds[i]) return colors[i];
+        }
+        return colors[colors.length - 1];
+    };
+
+    // Property colors
+    const hardColor = getColor(pred.hardness, [50, 20, 5], ['#00FF00', '#FFFF00', '#FFA500', '#888']);
+    const thermalColor = getColor(pred.thermalConductivity, [500, 100, 20], ['#00FF00', '#FFFF00', '#FFA500', '#888']);
+    const elecColor = getColor(pred.electricalConductivity, [50, 10, 1], ['#00FF00', '#FFFF00', '#FFA500', '#888']);
+    const meltColor = getColor(pred.meltingPoint, [2500, 1500, 500], ['#FF4444', '#FFA500', '#FFFF00', '#88aaff']);
+    const resistColor = getColor(100 - pred.resistivity, [80, 50, 20], ['#00FF00', '#FFFF00', '#FFA500', '#888']);
+    const ductColor = getColor(pred.ductility, [70, 40, 20], ['#00FF00', '#FFFF00', '#FFA500', '#888']);
+    const corrColor = getColor(pred.corrosionResistance, [70, 40, 20], ['#00FF00', '#FFFF00', '#FFA500', '#888']);
+    const magColor = pred.magnetic > 60 ? '#FF4444' : pred.magnetic > 30 ? '#FFA500' : '#888';
+    const bandColor = pred.bandgap > 3 ? '#888' : pred.bandgap > 1 ? '#FFFF00' : pred.bandgap > 0 ? '#FFA500' : '#00FF00';
+
+    // Magnetic label
+    const magLabel = pred.magnetic > 60 ? 'Ferro' : pred.magnetic > 30 ? 'Para' : 'Dia';
 
     resultsDiv.innerHTML = `
         <div style="border-top:1px solid #333;padding-top:10px;margin-top:5px">
-            <div style="font-size:16px;color:#FFD700;margin-bottom:8px">${pred.formula}</div>
+            <div style="font-size:18px;color:#FFD700;margin-bottom:8px;text-align:center">${pred.formula}</div>
 
-            <div style="margin-bottom:6px">
-                <span style="color:#888">Net Torque (tau):</span>
-                <span style="color:${stabColor}">${pred.tau_net >= 0 ? '+' : ''}${pred.tau_net.toFixed(3)} eV</span>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:10px;font-size:10px">
+                <div style="text-align:center">
+                    <span style="color:#888">tau:</span>
+                    <span style="color:${stabColor}">${pred.tau_net >= 0 ? '+' : ''}${pred.tau_net.toFixed(2)}</span>
+                </div>
+                <div style="text-align:center">
+                    <span style="color:#888">Stab:</span>
+                    <span style="color:${stabColor}">${(pred.stability * 100).toFixed(0)}%</span>
+                </div>
+                <div style="text-align:center">
+                    <span style="color:${elecColor}">${pred.conductorClass}</span>
+                </div>
             </div>
 
-            <div style="margin-bottom:6px">
-                <span style="color:#888">Stability:</span>
-                <span style="color:${stabColor}">${(pred.stability * 100).toFixed(1)}%</span>
-                <span style="color:#666;font-size:10px">(${pred.stabilityClass})</span>
+            ${pred.binaryStretch < 1 ? '<div style="color:#FFA500;font-size:9px;text-align:center;margin-bottom:6px">Interface strain (opposite torques)</div>' : ''}
+
+            <div style="background:#1a1a2e;border-radius:6px;padding:8px;margin-bottom:6px">
+                <div style="color:#FFD700;font-size:10px;margin-bottom:6px;text-align:center">MECHANICAL</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+                    <div style="background:#0d0d1a;padding:6px 4px;border-radius:3px;text-align:center">
+                        <div style="color:#888;font-size:8px">HARDNESS</div>
+                        <div style="font-size:14px;color:${hardColor}">${pred.hardness.toFixed(1)}</div>
+                        <div style="color:#555;font-size:7px">GPa</div>
+                    </div>
+                    <div style="background:#0d0d1a;padding:6px 4px;border-radius:3px;text-align:center">
+                        <div style="color:#888;font-size:8px">DUCTILITY</div>
+                        <div style="font-size:14px;color:${ductColor}">${pred.ductility.toFixed(0)}</div>
+                        <div style="color:#555;font-size:7px">%</div>
+                    </div>
+                    <div style="background:#0d0d1a;padding:6px 4px;border-radius:3px;text-align:center">
+                        <div style="color:#888;font-size:8px">DENSITY</div>
+                        <div style="font-size:14px;color:#aaa">${pred.density.toFixed(1)}</div>
+                        <div style="color:#555;font-size:7px">g/cm3</div>
+                    </div>
+                </div>
             </div>
 
-            <div style="margin-bottom:6px">
-                <span style="color:#888">Bond Type:</span>
-                <span style="color:#aaa">${pred.bondType}</span>
-                ${pred.binaryStretch < 1 ? '<span style="color:#FFA500;font-size:10px"> (interface strain)</span>' : ''}
+            <div style="background:#1a1a2e;border-radius:6px;padding:8px;margin-bottom:6px">
+                <div style="color:#FFD700;font-size:10px;margin-bottom:6px;text-align:center">THERMAL / ELECTRICAL</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+                    <div style="background:#0d0d1a;padding:6px 4px;border-radius:3px;text-align:center">
+                        <div style="color:#888;font-size:8px">MELT PT</div>
+                        <div style="font-size:14px;color:${meltColor}">${pred.meltingPoint.toFixed(0)}</div>
+                        <div style="color:#555;font-size:7px">K</div>
+                    </div>
+                    <div style="background:#0d0d1a;padding:6px 4px;border-radius:3px;text-align:center">
+                        <div style="color:#888;font-size:8px">THERMAL K</div>
+                        <div style="font-size:14px;color:${thermalColor}">${pred.thermalConductivity.toFixed(0)}</div>
+                        <div style="color:#555;font-size:7px">W/mK</div>
+                    </div>
+                    <div style="background:#0d0d1a;padding:6px 4px;border-radius:3px;text-align:center">
+                        <div style="color:#888;font-size:8px">ELEC COND</div>
+                        <div style="font-size:14px;color:${elecColor}">${pred.electricalConductivity.toFixed(0)}</div>
+                        <div style="color:#555;font-size:7px">rel</div>
+                    </div>
+                </div>
             </div>
 
-            <div style="margin-bottom:6px">
-                <span style="color:#888">Avg Electronegativity:</span>
-                <span style="color:#aaa">${pred.omega_avg.toFixed(2)}</span>
+            <div style="background:#1a1a2e;border-radius:6px;padding:8px;margin-bottom:6px">
+                <div style="color:#FFD700;font-size:10px;margin-bottom:6px;text-align:center">SPECIAL PROPERTIES</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px">
+                    <div style="background:#0d0d1a;padding:6px 4px;border-radius:3px;text-align:center">
+                        <div style="color:#888;font-size:8px">CORROSION</div>
+                        <div style="font-size:12px;color:${corrColor}">${pred.corrosionResistance.toFixed(0)}</div>
+                    </div>
+                    <div style="background:#0d0d1a;padding:6px 4px;border-radius:3px;text-align:center">
+                        <div style="color:#888;font-size:8px">RESISTIV</div>
+                        <div style="font-size:12px;color:${resistColor}">${pred.resistivity.toFixed(0)}</div>
+                    </div>
+                    <div style="background:#0d0d1a;padding:6px 4px;border-radius:3px;text-align:center">
+                        <div style="color:#888;font-size:8px">MAGNETIC</div>
+                        <div style="font-size:12px;color:${magColor}">${magLabel}</div>
+                    </div>
+                    <div style="background:#0d0d1a;padding:6px 4px;border-radius:3px;text-align:center">
+                        <div style="color:#888;font-size:8px">BANDGAP</div>
+                        <div style="font-size:12px;color:${bandColor}">${pred.bandgap.toFixed(1)}</div>
+                        <div style="color:#555;font-size:7px">eV</div>
+                    </div>
+                </div>
             </div>
 
-            <div style="margin-top:10px;padding:8px;background:#1a1a2e;border-radius:4px">
-                <div style="color:#888;font-size:10px;margin-bottom:4px">PREDICTED HARDNESS (v10)</div>
-                <div style="font-size:20px;color:${hardColor}">${pred.hardness.toFixed(1)} GPa</div>
-                <div style="color:#666;font-size:10px">Vickers scale (Diamond=100)</div>
-            </div>
-
-            <div style="margin-top:8px;font-size:10px;color:#666">
-                ${pred.details.map(d =>
-                    `${d.symbol}: tau=${d.tau >= 0 ? '+' : ''}${d.tau.toFixed(2)}, f=${d.fatigue.toFixed(2)}`
-                ).join('<br>')}
+            <div style="font-size:9px;color:#555;text-align:center">
+                ${pred.details.map(d => `${d.symbol}:${d.tau >= 0 ? '+' : ''}${d.tau.toFixed(1)}`).join(' | ')}
             </div>
         </div>
     `;
@@ -490,18 +770,18 @@ function initHardnessExplorer() {
         button.style.cssText = 'margin-top:10px;border-top:1px solid #444;padding-top:10px';
         button.innerHTML = `
             <button id="he-open" style="background:#1a1a2e;color:#FFD700;border:1px solid #FFD700;padding:8px 12px;cursor:pointer;border-radius:4px;width:100%">
-                Open Hardness Explorer
+                Materials Property Explorer
             </button>
         `;
         infoPanel.appendChild(button);
 
         document.getElementById('he-open').addEventListener('click', () => {
-            HardnessExplorer.enabled = true;
-            HardnessExplorer.panel.style.display = 'block';
+            MaterialsExplorer.enabled = true;
+            MaterialsExplorer.panel.style.display = 'block';
         });
     }
 
-    console.log('Hardness Explorer initialized');
+    console.log('Materials Property Explorer initialized');
 }
 
 // Auto-init when DOM ready
@@ -513,5 +793,6 @@ if (document.readyState === 'loading') {
 }
 
 // Export for use in main script
-window.HardnessExplorer = HardnessExplorer;
+window.MaterialsExplorer = MaterialsExplorer;
+window.HardnessExplorer = HardnessExplorer;  // Backwards compatibility
 window.selectElementForHardness = selectElementForHardness;
