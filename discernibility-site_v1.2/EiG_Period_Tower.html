@@ -140,6 +140,9 @@
                 H/He at top → Heavy elements below<br>
                 Radii: f-block (inner), s/p (mid), d-block (outer)
             </div>
+            <div style="color: #666; font-size: 9px; margin-top: 5px;">
+                🖱️ Left-drag: rotate | Right-drag: pan | Scroll: zoom
+            </div>
             
             <h3>🎨 BLOCKS</h3>
             <div class="controls">
@@ -172,10 +175,11 @@
             <label>Helix Pitch: <input type="range" id="pitch" min="20" max="100" value="50"></label>
             <label>Radius Scale: <input type="range" id="radius" min="50" max="200" value="100"></label>
             <label>Element Size: <input type="range" id="elementSize" min="2" max="12" value="8"></label>
+            <label>Label Size: <input type="range" id="labelSize" min="5" max="30" value="10"></label>
             <label><input type="checkbox" id="show-ribbons" checked> Period ribbons</label>
             <label><input type="checkbox" id="show-axis"> Central axis</label>
             <label><input type="checkbox" id="show-labels" checked> Element labels</label>
-            <label><input type="checkbox" id="block-separation" checked> Block separation</label>
+            <label><input type="checkbox" id="block-separation"> Block separation</label>
             <label><input type="checkbox" id="auto-rotate"> Auto-rotate</label>
         </div>
     </div>
@@ -371,11 +375,12 @@ let settings = {
     pitch: 50,
     radius: 100,
     elementSize: 8,
+    labelSize: 10,
     showRibbons: true,
     showAxis: false,
     showLabels: true,
     autoRotate: false,
-    blockSeparation: true,
+    blockSeparation: false,
     blocks: { s: true, p: true, noble: true, d: true, f: true }
 };
 
@@ -428,37 +433,67 @@ function init() {
 }
 
 function setupControls() {
-    let isDragging = false;
+    let isRotating = false;
+    let isPanning = false;
     let previousMousePosition = { x: 0, y: 0 };
     let spherical = { theta: Math.PI / 4, phi: Math.PI / 3, radius: 500 };
+    let panOffset = { x: 0, y: 0, z: 0 };
     
     function updateCamera() {
-        camera.position.x = spherical.radius * Math.sin(spherical.phi) * Math.cos(spherical.theta);
-        camera.position.y = spherical.radius * Math.cos(spherical.phi);
-        camera.position.z = spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta);
-        camera.position.y += 200; // Offset to center on tower
-        camera.lookAt(0, 200, 0);
+        camera.position.x = spherical.radius * Math.sin(spherical.phi) * Math.cos(spherical.theta) + panOffset.x;
+        camera.position.y = spherical.radius * Math.cos(spherical.phi) + 200 + panOffset.y;
+        camera.position.z = spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta) + panOffset.z;
+        camera.lookAt(panOffset.x, 200 + panOffset.y, panOffset.z);
     }
     
     renderer.domElement.addEventListener('mousedown', (e) => {
         if (e.target === renderer.domElement) {
-            isDragging = true;
+            if (e.button === 0) { // Left click - rotate
+                isRotating = true;
+            } else if (e.button === 2) { // Right click - pan
+                isPanning = true;
+            }
             previousMousePosition = { x: e.clientX, y: e.clientY };
         }
     });
     
-    window.addEventListener('mouseup', () => { isDragging = false; });
+    // Prevent context menu on right click
+    renderer.domElement.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+    });
+    
+    window.addEventListener('mouseup', (e) => {
+        if (e.button === 0) isRotating = false;
+        if (e.button === 2) isPanning = false;
+    });
     
     window.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        
         const deltaX = e.clientX - previousMousePosition.x;
         const deltaY = e.clientY - previousMousePosition.y;
         
-        spherical.theta -= deltaX * 0.005;
-        spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi - deltaY * 0.005));
+        if (isRotating) {
+            spherical.theta -= deltaX * 0.005;
+            spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi - deltaY * 0.005));
+            updateCamera();
+        }
         
-        updateCamera();
+        if (isPanning) {
+            // Pan in screen space
+            const panSpeed = spherical.radius * 0.002;
+            
+            // Calculate right and up vectors based on current camera orientation
+            const right = new THREE.Vector3();
+            const up = new THREE.Vector3(0, 1, 0);
+            camera.getWorldDirection(right);
+            right.cross(up).normalize();
+            
+            panOffset.x -= right.x * deltaX * panSpeed;
+            panOffset.z -= right.z * deltaX * panSpeed;
+            panOffset.y += deltaY * panSpeed;
+            
+            updateCamera();
+        }
+        
         previousMousePosition = { x: e.clientX, y: e.clientY };
     });
     
@@ -542,7 +577,7 @@ function buildHelix() {
             const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
             const sprite = new THREE.Sprite(spriteMaterial);
             sprite.position.set(x, y + settings.elementSize + 7, z);
-            const labelScale = settings.elementSize / 8; // Scale labels with element size
+            const labelScale = settings.labelSize / 10;
             sprite.scale.set(20 * labelScale, 10 * labelScale, 1);
             scene.add(sprite);
             labelSprites.push(sprite);
@@ -637,6 +672,11 @@ function setupUI() {
     
     document.getElementById('elementSize').addEventListener('input', (e) => {
         settings.elementSize = parseInt(e.target.value);
+        buildHelix();
+    });
+    
+    document.getElementById('labelSize').addEventListener('input', (e) => {
+        settings.labelSize = parseInt(e.target.value);
         buildHelix();
     });
     
