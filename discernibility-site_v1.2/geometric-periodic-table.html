@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geometric Periodic Table | Discernibility.org</title>
-    <meta name="description" content="Four interactive views of the 120° geometric periodic table structure">
+    <meta name="description" content="Two interactive 3D views of the 120° geometric periodic table structure">
     
     <!-- Same fonts and base styling as your main site -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -255,6 +255,15 @@
             margin-top: 4rem;
         }
 
+        footer a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: var(--text-primary);
+        }
+
         @media (max-width: 1024px) {
             .visualizations-grid {
                 grid-template-columns: 1fr;
@@ -279,22 +288,22 @@
 <body>
     <nav>
         <div class="nav-brand">DISCERNIBILITY.ORG</div>
-    <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="constitutional-geometry.html">Constitutional Geometry</a></li>
-        <li><a href="geometric-periodic-table.html" class="active">Geometric Periodic Table</a></li>
-        <li><a href="postulate.html">The Postulate</a></li>
-        <li><a href="implications.html">Implications</a></li>
-        <li><a href="process-monitoring.html">Process Monitoring</a></li>
-        <li><a href="academic.html">Academic</a></li>
-        <li><a href="#contact">Contact</a></li>
-    </ul>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="constitutional-geometry.html">Constitutional Geometry</a></li>
+            <li><a href="geometric-periodic-table.html" class="active">Geometric Periodic Table</a></li>
+            <li><a href="postulate.html">The Postulate</a></li>
+            <li><a href="implications.html">Implications</a></li>
+            <li><a href="process-monitoring.html">Process Monitoring</a></li>
+            <li><a href="academic.html">Academic</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
     </nav>
 
     <div class="container">
         <div class="page-header">
             <h1>The Geometric Periodic Table</h1>
-            <p class="subtitle">Four interactive views of the 120° structure</p>
+            <p class="subtitle">Two interactive 3D views of the 120° structure</p>
         </div>
 
         <div class="intro-section">
@@ -304,7 +313,7 @@
                 elements organized radially by d-electron count and group.
             </p>
             <p>
-                Below are four complementary visualizations of the same underlying 
+                Below are two complementary 3D visualizations of the same underlying 
                 geometry. Each emphasizes different aspects of the structure.
             </p>
         </div>
@@ -312,7 +321,7 @@
         <div class="key-principle">
             <h3>The Shared Principle: 120° Per Period</h3>
             <p>
-                All four visualizations are based on the same geometric foundation:
+                Both visualizations are based on the same geometric foundation:
             </p>
             <ul style="color: var(--text-secondary); padding-left: 2rem;">
                 <li><strong>120° per period</strong> - Three periods complete a full 360° rotation</li>
@@ -325,60 +334,34 @@
         <h2 style="text-align: center; margin-bottom: 2rem; color: var(--accent-gold);">Choose Your View</h2>
 
         <div class="visualizations-grid">
-            <!-- 2D Vortex -->
+            <!-- 3D Vortex -->
             <div class="viz-card">
-                <h3>2D Vortex (Geometric)</h3>
+                <h3>3D Vortex (Geometric)</h3>
                 <div class="viz-preview">
-                    <img src="images/vortex-2d-preview.png" alt="2D Vortex View">
+                    <img src="images/Periodic_vertex.PNG" alt="3D Vortex View">
                 </div>
                 <p>
-                    Flat projection with the 3-4-5 triangle at center. Shows the 
+                    Interactive 3D projection with the 3-4-5 triangle at center. Shows the 
                     geometric foundation and makes the 120° structure visible. 
-                    Best for understanding the mathematical basis.
+                    Rotate, zoom, and explore element properties. Best for understanding 
+                    the mathematical basis.
                 </p>
-                <a href="EiG_Vortex_v24.html" class="btn">Launch Interactive →</a>
-            </div>
-
-            <!-- 2D Derived -->
-            <div class="viz-card">
-                <h3>2D Derived (Amphitheater)</h3>
-                <div class="viz-preview">
-                    <img src="images/amphitheater-preview.png" alt="Amphitheater View">
-                </div>
-                <p>
-                    All 120 elements positioned by derived formulas. "Amphitheater 
-                    seating" arrangement shows angular positions for every element 
-                    including superheavies. Most comprehensive 2D view.
-                </p>
-                <a href="EiG_2D_Derived.html" class="btn">Launch Interactive →</a>
+                <a href="EiG_Vortex_v24.html" target="_blank" rel="noopener noreferrer" class="btn">Launch Interactive →</a>
             </div>
 
             <!-- Period Tower -->
             <div class="viz-card">
                 <h3>Period Tower (Coordinates)</h3>
                 <div class="viz-preview">
-                    <img src="images/period-tower-preview.png" alt="Period Tower View">
+                    <img src="images/Periodic_Tower.PNG" alt="Period Tower View">
                 </div>
                 <p>
                     Discrete orbital bands like planets at fixed distances. Emphasizes 
                     the constitutional coordinates (d, P, g) used for property predictions. 
-                    Best for understanding the coordinate system.
+                    Interactive 3D view with element data on hover. Best for understanding 
+                    the coordinate system.
                 </p>
-                <a href="EiG_Period_Tower.html" class="btn">Launch Interactive →</a>
-            </div>
-
-            <!-- 3D Helicoid -->
-            <div class="viz-card">
-                <h3>3D Helicoid (Flow)</h3>
-                <div class="viz-preview">
-                    <img src="images/helicoid-3d-preview.png" alt="3D Helicoid View">
-                </div>
-                <p>
-                    Continuous spiral ribbon connecting elements along helical path. 
-                    Shows period-to-period transitions and group relationships. 
-                    Best for visualizing connectivity and flow.
-                </p>
-                <a href="EiG_3D_Helicoid.html" class="btn">Launch Interactive →</a>
+                <a href="EiG_Period_Tower.html" target="_blank" rel="noopener noreferrer" class="btn">Launch Interactive →</a>
             </div>
         </div>
 
