@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EiG Period Tower - Complete Coordinate System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Consolas', monospace;
+            background: #0a0a1a; 
+            color: #eee;
+            overflow: hidden;
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #info-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(10, 10, 30, 0.9);
+            border: 1px solid #0ff;
+            border-radius: 8px;
+            padding: 15px;
+            width: 300px;
+            font-size: 11px;
+            z-index: 100;
+        }
+        
+        #info-panel h1 {
+            color: #0ff;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        #info-panel h3 {
+            color: #0ff;
+            font-size: 12px;
+            margin-top: 12px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+        }
+        
+        .controls {
+            margin: 10px 0;
+        }
+        
+        .controls label {
+            display: inline-block;
+            margin-right: 10px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        
+        .legend {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            font-size: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        #hover-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #111;
+            border-radius: 4px;
+            min-height: 80px;
+        }
+        
+        #hover-info .sym {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .formula-box {
+            background: #0a1a0a;
+            border: 1px solid #0f0;
+            padding: 6px;
+            margin: 4px 0;
+            font-size: 10px;
+            border-radius: 3px;
+        }
+        
+        #controls-3d {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(10, 10, 30, 0.9);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 10px;
+            z-index: 100;
+        }
+        
+        #controls-3d label {
+            display: block;
+            margin: 5px 0;
+        }
+        
+        #controls-3d input[type="range"] {
+            width: 150px;
+        }
+        
+        .key-insight {
+            background: #1a1a0a;
+            border-left: 3px solid #ff0;
+            padding: 8px;
+            margin: 10px 0;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="info-panel">
+            <h1>EiG Period Tower</h1>
+            <div style="color: #888; font-size: 10px;">Complete Coordinate System for Materials Science</div>
+            
+            <h3>📐 STRUCTURE</h3>
+            <div class="formula-box">
+                Each period = 120° arc<br>
+                φ angle = arccos(IE/IE_C)<br>
+                H/He at top → Heavy elements below<br>
+                Radii: f-block (inner), s/p (mid), d-block (outer)
+            </div>
+            
+            <h3>🎨 BLOCKS</h3>
+            <div class="controls">
+                <label><input type="checkbox" id="show-s" checked> s-block</label>
+                <label><input type="checkbox" id="show-p" checked> p-block</label>
+                <label><input type="checkbox" id="show-noble" checked> noble</label>
+                <label><input type="checkbox" id="show-d" checked> d-block</label>
+                <label><input type="checkbox" id="show-f" checked> f-block</label>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot" style="background: #00ffff;"></div>s (0°-17°)</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #ffff00;"></div>p (34°-103°)</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #00ff00;"></div>noble (120°)</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #ff8800;"></div>d (21°-64°)</div>
+                <div class="legend-item"><div class="legend-dot" style="background: #ff00ff;"></div>f (56°-63°)</div>
+            </div>
+            
+            <div class="key-insight">
+                <b>KEY:</b> All blocks interleave within 0°-120°<br>
+                d-block and f-block do NOT extend beyond 120°
+            </div>
+            
+            <h3>ELEMENT INFO</h3>
+            <div id="hover-info">
+                Click/hover on an element
+            </div>
+        </div>
+        
+        <div id="controls-3d">
+            <label>Helix Pitch: <input type="range" id="pitch" min="20" max="100" value="50"></label>
+            <label>Radius Scale: <input type="range" id="radius" min="50" max="200" value="100"></label>
+            <label>Element Size: <input type="range" id="elementSize" min="2" max="12" value="8"></label>
+            <label><input type="checkbox" id="show-ribbons" checked> Period ribbons</label>
+            <label><input type="checkbox" id="show-axis"> Central axis</label>
+            <label><input type="checkbox" id="show-labels" checked> Element labels</label>
+            <label><input type="checkbox" id="block-separation" checked> Block separation</label>
+            <label><input type="checkbox" id="auto-rotate"> Auto-rotate</label>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+// ============================================================================
+// ELEMENT DATA (from canonical database v3)
+// ============================================================================
+const ELEMENTS = [
+    // Period 1
+    { Z: 1, sym: 'H', period: 1, group: 1, block: 's', phi: 0.0, IE: 13.5984, strand: 'B' },
+    { Z: 2, sym: 'He', period: 1, group: 18, block: 'noble', phi: 120.0, IE: 24.5874, strand: 'B' },
+    
+    // Period 2
+    { Z: 3, sym: 'Li', period: 2, group: 1, block: 's', phi: 0.0, IE: 5.3917, strand: 'A' },
+    { Z: 4, sym: 'Be', period: 2, group: 2, block: 's', phi: 17.1429, IE: 9.3227, strand: 'A' },
+    { Z: 5, sym: 'B', period: 2, group: 13, block: 'p', phi: 34.2857, IE: 8.2980, strand: 'A' },
+    { Z: 6, sym: 'C', period: 2, group: 14, block: 'p', phi: 51.4286, IE: 11.2603, strand: 'A' },
+    { Z: 7, sym: 'N', period: 2, group: 15, block: 'p', phi: 68.5714, IE: 14.5341, strand: 'B' },
+    { Z: 8, sym: 'O', period: 2, group: 16, block: 'p', phi: 85.7143, IE: 13.6181, strand: 'B' },
+    { Z: 9, sym: 'F', period: 2, group: 17, block: 'p', phi: 102.8571, IE: 17.4228, strand: 'B' },
+    { Z: 10, sym: 'Ne', period: 2, group: 18, block: 'noble', phi: 120.0, IE: 21.5645, strand: 'B' },
+    
+    // Period 3
+    { Z: 11, sym: 'Na', period: 3, group: 1, block: 's', phi: 0.0, IE: 5.1391, strand: 'A' },
+    { Z: 12, sym: 'Mg', period: 3, group: 2, block: 's', phi: 17.1429, IE: 7.6462, strand: 'A' },
+    { Z: 13, sym: 'Al', period: 3, group: 13, block: 'p', phi: 34.2857, IE: 5.9858, strand: 'A' },
+    { Z: 14, sym: 'Si', period: 3, group: 14, block: 'p', phi: 51.4286, IE: 8.1517, strand: 'A' },
+    { Z: 15, sym: 'P', period: 3, group: 15, block: 'p', phi: 68.5714, IE: 10.4867, strand: 'A' },
+    { Z: 16, sym: 'S', period: 3, group: 16, block: 'p', phi: 85.7143, IE: 10.3600, strand: 'A' },
+    { Z: 17, sym: 'Cl', period: 3, group: 17, block: 'p', phi: 102.8571, IE: 12.9676, strand: 'A' },
+    { Z: 18, sym: 'Ar', period: 3, group: 18, block: 'noble', phi: 120.0, IE: 15.7596, strand: 'B' },
+    
+    // Period 4 - s-block
+    { Z: 19, sym: 'K', period: 4, group: 1, block: 's', phi: 0.0, IE: 4.3407, strand: 'A' },
+    { Z: 20, sym: 'Ca', period: 4, group: 2, block: 's', phi: 17.1429, IE: 6.1132, strand: 'A' },
+    
+    // Period 4 - d-block (phi from arccos(IE/IE_C))
+    { Z: 21, sym: 'Sc', period: 4, group: 3, block: 'd', phi: 54.36, IE: 6.5615, strand: 'A' },
+    { Z: 22, sym: 'Ti', period: 4, group: 4, block: 'd', phi: 52.67, IE: 6.8281, strand: 'A' },
+    { Z: 23, sym: 'V', period: 4, group: 5, block: 'd', phi: 53.19, IE: 6.7462, strand: 'A' },
+    { Z: 24, sym: 'Cr', period: 4, group: 6, block: 'd', phi: 53.06, IE: 6.7665, strand: 'A' },
+    { Z: 25, sym: 'Mn', period: 4, group: 7, block: 'd', phi: 48.69, IE: 7.4340, strand: 'A' },
+    { Z: 26, sym: 'Fe', period: 4, group: 8, block: 'd', phi: 45.43, IE: 7.9024, strand: 'A' },
+    { Z: 27, sym: 'Co', period: 4, group: 9, block: 'd', phi: 45.58, IE: 7.8810, strand: 'A' },
+    { Z: 28, sym: 'Ni', period: 4, group: 10, block: 'd', phi: 47.28, IE: 7.6398, strand: 'A' },
+    { Z: 29, sym: 'Cu', period: 4, group: 11, block: 'd', phi: 46.67, IE: 7.7264, strand: 'A' },
+    { Z: 30, sym: 'Zn', period: 4, group: 12, block: 'd', phi: 33.46, IE: 9.3942, strand: 'A' },
+    
+    // Period 4 - p-block
+    { Z: 31, sym: 'Ga', period: 4, group: 13, block: 'p', phi: 34.2857, IE: 5.9993, strand: 'A' },
+    { Z: 32, sym: 'Ge', period: 4, group: 14, block: 'p', phi: 51.4286, IE: 7.8994, strand: 'A' },
+    { Z: 33, sym: 'As', period: 4, group: 15, block: 'p', phi: 68.5714, IE: 9.7886, strand: 'A' },
+    { Z: 34, sym: 'Se', period: 4, group: 16, block: 'p', phi: 85.7143, IE: 9.7524, strand: 'A' },
+    { Z: 35, sym: 'Br', period: 4, group: 17, block: 'p', phi: 102.8571, IE: 11.8138, strand: 'A' },
+    { Z: 36, sym: 'Kr', period: 4, group: 18, block: 'noble', phi: 120.0, IE: 13.9996, strand: 'B' },
+    
+    // Period 5 - s-block
+    { Z: 37, sym: 'Rb', period: 5, group: 1, block: 's', phi: 0.0, IE: 4.1771, strand: 'A' },
+    { Z: 38, sym: 'Sr', period: 5, group: 2, block: 's', phi: 17.1429, IE: 5.6949, strand: 'A' },
+    
+    // Period 5 - d-block
+    { Z: 39, sym: 'Y', period: 5, group: 3, block: 'd', phi: 56.49, IE: 6.2173, strand: 'A' },
+    { Z: 40, sym: 'Zr', period: 5, group: 4, block: 'd', phi: 53.90, IE: 6.6339, strand: 'A' },
+    { Z: 41, sym: 'Nb', period: 5, group: 5, block: 'd', phi: 53.11, IE: 6.7589, strand: 'A' },
+    { Z: 42, sym: 'Mo', period: 5, group: 6, block: 'd', phi: 50.96, IE: 7.0924, strand: 'A' },
+    { Z: 43, sym: 'Tc', period: 5, group: 7, block: 'd', phi: 49.72, IE: 7.2800, strand: 'A' },
+    { Z: 44, sym: 'Ru', period: 5, group: 8, block: 'd', phi: 49.18, IE: 7.3605, strand: 'A' },
+    { Z: 45, sym: 'Rh', period: 5, group: 9, block: 'd', phi: 48.52, IE: 7.4589, strand: 'A' },
+    { Z: 46, sym: 'Pd', period: 5, group: 10, block: 'd', phi: 42.24, IE: 8.3369, strand: 'A' },
+    { Z: 47, sym: 'Ag', period: 5, group: 11, block: 'd', phi: 47.71, IE: 7.5762, strand: 'A' },
+    { Z: 48, sym: 'Cd', period: 5, group: 12, block: 'd', phi: 36.99, IE: 8.9938, strand: 'A' },
+    
+    // Period 5 - p-block
+    { Z: 49, sym: 'In', period: 5, group: 13, block: 'p', phi: 34.2857, IE: 5.7864, strand: 'A' },
+    { Z: 50, sym: 'Sn', period: 5, group: 14, block: 'p', phi: 51.4286, IE: 7.3439, strand: 'A' },
+    { Z: 51, sym: 'Sb', period: 5, group: 15, block: 'p', phi: 68.5714, IE: 8.6084, strand: 'A' },
+    { Z: 52, sym: 'Te', period: 5, group: 16, block: 'p', phi: 85.7143, IE: 9.0096, strand: 'A' },
+    { Z: 53, sym: 'I', period: 5, group: 17, block: 'p', phi: 102.8571, IE: 10.4513, strand: 'A' },
+    { Z: 54, sym: 'Xe', period: 5, group: 18, block: 'noble', phi: 120.0, IE: 12.1298, strand: 'A' },
+    
+    // Period 6 - s-block
+    { Z: 55, sym: 'Cs', period: 6, group: 1, block: 's', phi: 0.0, IE: 3.8939, strand: 'A' },
+    { Z: 56, sym: 'Ba', period: 6, group: 2, block: 's', phi: 17.1429, IE: 5.2117, strand: 'A' },
+    
+    // Period 6 - f-block (lanthanides, phi = 60 + (f_idx - 7) * 0.5)
+    { Z: 57, sym: 'La', period: 6, group: 3, block: 'f', phi: 56.5, IE: 5.5769, strand: 'A', fIndex: 0 },
+    { Z: 58, sym: 'Ce', period: 6, group: 3, block: 'f', phi: 57.0, IE: 5.5387, strand: 'A', fIndex: 1 },
+    { Z: 59, sym: 'Pr', period: 6, group: 3, block: 'f', phi: 57.5, IE: 5.4730, strand: 'A', fIndex: 2 },
+    { Z: 60, sym: 'Nd', period: 6, group: 3, block: 'f', phi: 58.0, IE: 5.5250, strand: 'A', fIndex: 3 },
+    { Z: 61, sym: 'Pm', period: 6, group: 3, block: 'f', phi: 58.5, IE: 5.5820, strand: 'A', fIndex: 4 },
+    { Z: 62, sym: 'Sm', period: 6, group: 3, block: 'f', phi: 59.0, IE: 5.6437, strand: 'A', fIndex: 5 },
+    { Z: 63, sym: 'Eu', period: 6, group: 3, block: 'f', phi: 59.5, IE: 5.6704, strand: 'A', fIndex: 6 },
+    { Z: 64, sym: 'Gd', period: 6, group: 3, block: 'f', phi: 60.0, IE: 6.1501, strand: 'A', fIndex: 7 },
+    { Z: 65, sym: 'Tb', period: 6, group: 3, block: 'f', phi: 60.5, IE: 5.8638, strand: 'A', fIndex: 8 },
+    { Z: 66, sym: 'Dy', period: 6, group: 3, block: 'f', phi: 61.0, IE: 5.9389, strand: 'A', fIndex: 9 },
+    { Z: 67, sym: 'Ho', period: 6, group: 3, block: 'f', phi: 61.5, IE: 6.0215, strand: 'A', fIndex: 10 },
+    { Z: 68, sym: 'Er', period: 6, group: 3, block: 'f', phi: 62.0, IE: 6.1077, strand: 'A', fIndex: 11 },
+    { Z: 69, sym: 'Tm', period: 6, group: 3, block: 'f', phi: 62.5, IE: 6.1843, strand: 'A', fIndex: 12 },
+    { Z: 70, sym: 'Yb', period: 6, group: 3, block: 'f', phi: 63.0, IE: 6.2542, strand: 'A', fIndex: 13 },
+    { Z: 71, sym: 'Lu', period: 6, group: 3, block: 'd', phi: 61.19, IE: 5.4259, strand: 'A' },
+    
+    // Period 6 - d-block
+    { Z: 72, sym: 'Hf', period: 6, group: 4, block: 'd', phi: 52.69, IE: 6.8251, strand: 'A' },
+    { Z: 73, sym: 'Ta', period: 6, group: 5, block: 'd', phi: 47.90, IE: 7.5496, strand: 'A' },
+    { Z: 74, sym: 'W', period: 6, group: 6, block: 'd', phi: 45.70, IE: 7.8640, strand: 'A' },
+    { Z: 75, sym: 'Re', period: 6, group: 7, block: 'd', phi: 45.92, IE: 7.8335, strand: 'A' },
+    { Z: 76, sym: 'Os', period: 6, group: 8, block: 'd', phi: 41.46, IE: 8.4382, strand: 'A' },
+    { Z: 77, sym: 'Ir', period: 6, group: 9, block: 'd', phi: 37.22, IE: 8.9670, strand: 'A' },
+    { Z: 78, sym: 'Pt', period: 6, group: 10, block: 'd', phi: 37.29, IE: 8.9587, strand: 'A' },
+    { Z: 79, sym: 'Au', period: 6, group: 11, block: 'd', phi: 34.99, IE: 9.2255, strand: 'A' },
+    { Z: 80, sym: 'Hg', period: 6, group: 12, block: 'd', phi: 22.04, IE: 10.4375, strand: 'A' },
+    
+    // Period 6 - p-block
+    { Z: 81, sym: 'Tl', period: 6, group: 13, block: 'p', phi: 34.2857, IE: 6.1082, strand: 'A' },
+    { Z: 82, sym: 'Pb', period: 6, group: 14, block: 'p', phi: 51.4286, IE: 7.4167, strand: 'A' },
+    { Z: 83, sym: 'Bi', period: 6, group: 15, block: 'p', phi: 68.5714, IE: 7.2855, strand: 'A' },
+    { Z: 84, sym: 'Po', period: 6, group: 16, block: 'p', phi: 85.7143, IE: 8.4140, strand: 'A' },
+    { Z: 85, sym: 'At', period: 6, group: 17, block: 'p', phi: 102.8571, IE: 9.3175, strand: 'A' },
+    { Z: 86, sym: 'Rn', period: 6, group: 18, block: 'noble', phi: 120.0, IE: 10.7485, strand: 'A' },
+    
+    // Period 7 - s-block
+    { Z: 87, sym: 'Fr', period: 7, group: 1, block: 's', phi: 0.0, IE: 4.0727, strand: 'A' },
+    { Z: 88, sym: 'Ra', period: 7, group: 2, block: 's', phi: 17.1429, IE: 5.2784, strand: 'A' },
+    
+    // Period 7 - f-block (actinides)
+    { Z: 89, sym: 'Ac', period: 7, group: 3, block: 'f', phi: 56.5, IE: 5.1700, strand: 'A', fIndex: 0 },
+    { Z: 90, sym: 'Th', period: 7, group: 3, block: 'f', phi: 57.0, IE: 6.3067, strand: 'A', fIndex: 1 },
+    { Z: 91, sym: 'Pa', period: 7, group: 3, block: 'f', phi: 57.5, IE: 5.8900, strand: 'A', fIndex: 2 },
+    { Z: 92, sym: 'U', period: 7, group: 3, block: 'f', phi: 58.0, IE: 6.1941, strand: 'A', fIndex: 3 },
+    { Z: 93, sym: 'Np', period: 7, group: 3, block: 'f', phi: 58.5, IE: 6.2657, strand: 'A', fIndex: 4 },
+    { Z: 94, sym: 'Pu', period: 7, group: 3, block: 'f', phi: 59.0, IE: 6.0262, strand: 'A', fIndex: 5 },
+    { Z: 95, sym: 'Am', period: 7, group: 3, block: 'f', phi: 59.5, IE: 5.9738, strand: 'A', fIndex: 6 },
+    { Z: 96, sym: 'Cm', period: 7, group: 3, block: 'f', phi: 60.0, IE: 5.9915, strand: 'A', fIndex: 7 },
+    { Z: 97, sym: 'Bk', period: 7, group: 3, block: 'f', phi: 60.5, IE: 6.1979, strand: 'A', fIndex: 8 },
+    { Z: 98, sym: 'Cf', period: 7, group: 3, block: 'f', phi: 61.0, IE: 6.2817, strand: 'A', fIndex: 9 },
+    { Z: 99, sym: 'Es', period: 7, group: 3, block: 'f', phi: 61.5, IE: 6.42, strand: 'A', fIndex: 10 },
+    { Z: 100, sym: 'Fm', period: 7, group: 3, block: 'f', phi: 62.0, IE: 6.50, strand: 'A', fIndex: 11 },
+    { Z: 101, sym: 'Md', period: 7, group: 3, block: 'f', phi: 62.5, IE: 6.58, strand: 'A', fIndex: 12 },
+    { Z: 102, sym: 'No', period: 7, group: 3, block: 'f', phi: 63.0, IE: 6.65, strand: 'A', fIndex: 13 },
+    { Z: 103, sym: 'Lr', period: 7, group: 3, block: 'd', phi: 64.20, IE: 4.90, strand: 'A' },
+    
+    // Period 7 - d-block
+    { Z: 104, sym: 'Rf', period: 7, group: 4, block: 'd', phi: 57.77, IE: 6.00, strand: 'A' },
+    { Z: 105, sym: 'Db', period: 7, group: 5, block: 'd', phi: 52.87, IE: 6.80, strand: 'A' },
+    { Z: 106, sym: 'Sg', period: 7, group: 6, block: 'd', phi: 46.17, IE: 7.80, strand: 'A' },
+    { Z: 107, sym: 'Bh', period: 7, group: 7, block: 'd', phi: 46.84, IE: 7.70, strand: 'A' },
+    { Z: 108, sym: 'Hs', period: 7, group: 8, block: 'd', phi: 47.53, IE: 7.60, strand: 'A' },
+    { Z: 109, sym: 'Mt', period: 7, group: 9, block: 'd', phi: 40.99, IE: 8.50, strand: 'A' },
+    { Z: 110, sym: 'Ds', period: 7, group: 10, block: 'd', phi: 32.51, IE: 9.50, strand: 'A' },
+    { Z: 111, sym: 'Rg', period: 7, group: 11, block: 'd', phi: 21.18, IE: 10.50, strand: 'A' },
+    { Z: 112, sym: 'Cn', period: 7, group: 12, block: 'd', phi: 0.0, IE: 11.50, strand: 'A' },
+    
+    // Period 7 - p-block
+    { Z: 113, sym: 'Nh', period: 7, group: 13, block: 'p', phi: 34.2857, IE: 7.30, strand: 'A' },
+    { Z: 114, sym: 'Fl', period: 7, group: 14, block: 'p', phi: 51.4286, IE: 8.50, strand: 'A' },
+    { Z: 115, sym: 'Mc', period: 7, group: 15, block: 'p', phi: 68.5714, IE: 5.60, strand: 'A' },
+    { Z: 116, sym: 'Lv', period: 7, group: 16, block: 'p', phi: 85.7143, IE: 6.80, strand: 'A' },
+    { Z: 117, sym: 'Ts', period: 7, group: 17, block: 'p', phi: 102.8571, IE: 7.70, strand: 'A' },
+    { Z: 118, sym: 'Og', period: 7, group: 18, block: 'noble', phi: 120.0, IE: 8.90, strand: 'A' },
+    
+    // Period 8
+    { Z: 119, sym: 'Uue', period: 8, group: 1, block: 's', phi: 67.68, IE: 4.2763, strand: 'A' },
+    { Z: 120, sym: 'Ubn', period: 8, group: 2, block: 's', phi: 60.51, IE: 5.5423, strand: 'A' },
+];
+
+// ============================================================================
+// COLORS
+// ============================================================================
+const COLORS = {
+    s: 0x00ffff,
+    p: 0xffff00,
+    noble: 0x00ff00,
+    d: 0xff8800,
+    f: 0xff00ff,
+};
+
+// ============================================================================
+// THREE.JS SETUP
+// ============================================================================
+let scene, camera, renderer, controls;
+let elementMeshes = [];
+let ribbonMeshes = [];
+let labelSprites = [];
+let hoveredElement = null;
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+// Settings
+let settings = {
+    pitch: 50,
+    radius: 100,
+    elementSize: 8,
+    showRibbons: true,
+    showAxis: false,
+    showLabels: true,
+    autoRotate: false,
+    blockSeparation: true,
+    blocks: { s: true, p: true, noble: true, d: true, f: true }
+};
+
+// Max period for flipping
+const MAX_PERIOD = 8;
+
+function init() {
+    // Scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a1a);
+    
+    // Camera
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera.position.set(300, 200, 300);
+    camera.lookAt(0, 200, 0);
+    
+    // Renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('container').appendChild(renderer.domElement);
+    
+    // Lights
+    const ambient = new THREE.AmbientLight(0x404040, 0.5);
+    scene.add(ambient);
+    
+    const directional = new THREE.DirectionalLight(0xffffff, 0.8);
+    directional.position.set(100, 200, 100);
+    scene.add(directional);
+    
+    const directional2 = new THREE.DirectionalLight(0xffffff, 0.4);
+    directional2.position.set(-100, -100, -100);
+    scene.add(directional2);
+    
+    // Orbit controls (manual implementation)
+    setupControls();
+    
+    // Build helix
+    buildHelix();
+    
+    // Events
+    window.addEventListener('resize', onWindowResize);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('click', onClick);
+    
+    // UI controls
+    setupUI();
+    
+    // Start
+    animate();
+}
+
+function setupControls() {
+    let isDragging = false;
+    let previousMousePosition = { x: 0, y: 0 };
+    let spherical = { theta: Math.PI / 4, phi: Math.PI / 3, radius: 500 };
+    
+    function updateCamera() {
+        camera.position.x = spherical.radius * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+        camera.position.y = spherical.radius * Math.cos(spherical.phi);
+        camera.position.z = spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+        camera.position.y += 200; // Offset to center on tower
+        camera.lookAt(0, 200, 0);
+    }
+    
+    renderer.domElement.addEventListener('mousedown', (e) => {
+        if (e.target === renderer.domElement) {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        }
+    });
+    
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        
+        const deltaX = e.clientX - previousMousePosition.x;
+        const deltaY = e.clientY - previousMousePosition.y;
+        
+        spherical.theta -= deltaX * 0.005;
+        spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi - deltaY * 0.005));
+        
+        updateCamera();
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+    });
+    
+    renderer.domElement.addEventListener('wheel', (e) => {
+        spherical.radius = Math.max(50, Math.min(1500, spherical.radius + e.deltaY * 0.5));
+        updateCamera();
+    });
+    
+    updateCamera();
+    
+    // Store for auto-rotate
+    window.spherical = spherical;
+    window.updateCamera = updateCamera;
+}
+
+function buildHelix() {
+    // Clear existing
+    elementMeshes.forEach(m => scene.remove(m));
+    ribbonMeshes.forEach(m => scene.remove(m));
+    labelSprites.forEach(s => scene.remove(s));
+    elementMeshes = [];
+    ribbonMeshes = [];
+    labelSprites = [];
+    
+    const pitchScale = settings.pitch / 50;
+    const radiusScale = settings.radius / 100;
+    
+    // Create elements
+    ELEMENTS.forEach(el => {
+        if (!settings.blocks[el.block]) return;
+        
+        // Convert position to 3D
+        // phi is 0-120 within each period
+        // Map to radians: 0° -> -π/2, 120° -> +π/6 (so 0° is at top)
+        const phiRad = (-90 + el.phi) * Math.PI / 180;
+        
+        // Radius varies by BLOCK to separate overlapping elements (if enabled)
+        // s/p/noble at base radius, d-block further out, f-block innermost
+        let blockRadiusOffset = 0;
+        if (settings.blockSeparation) {
+            if (el.block === 'd') blockRadiusOffset = 40;
+            if (el.block === 'f') blockRadiusOffset = -30;
+        }
+        const r = (80 + (el.period - 1) * 10 + blockRadiusOffset) * radiusScale;
+        
+        // FLIPPED: Height based on period - period 1 at TOP, period 8 at BOTTOM
+        const y = (MAX_PERIOD - el.period) * 60 * pitchScale;
+        
+        // X, Z from angle
+        const x = r * Math.cos(phiRad);
+        const z = r * Math.sin(phiRad);
+        
+        // Create sphere
+        const geometry = new THREE.SphereGeometry(settings.elementSize, 16, 16);
+        const material = new THREE.MeshPhongMaterial({ 
+            color: COLORS[el.block],
+            emissive: COLORS[el.block],
+            emissiveIntensity: 0.2,
+            shininess: 50
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(x, y, z);
+        mesh.userData = el;
+        
+        scene.add(mesh);
+        elementMeshes.push(mesh);
+        
+        // Create label
+        if (settings.showLabels) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 20px Consolas';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(el.sym, 32, 16);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.position.set(x, y + settings.elementSize + 7, z);
+            const labelScale = settings.elementSize / 8; // Scale labels with element size
+            sprite.scale.set(20 * labelScale, 10 * labelScale, 1);
+            scene.add(sprite);
+            labelSprites.push(sprite);
+        }
+    });
+    
+    // Create period ribbons
+    if (settings.showRibbons) {
+        for (let period = 1; period <= 8; period++) {
+            // FLIPPED: period 1 at top
+            const y = (MAX_PERIOD - period) * 60 * pitchScale;
+            const baseR = (80 + (period - 1) * 10) * radiusScale;
+            
+            // Create arcs based on block separation setting
+            let radii;
+            if (settings.blockSeparation) {
+                // Three arcs: f-block (inner), s/p (middle), d-block (outer)
+                radii = [
+                    { r: (baseR - 30 * radiusScale), color: 0x330033, opacity: 0.3 },  // f-block
+                    { r: baseR, color: 0x333366, opacity: 0.5 },                        // s/p/noble
+                    { r: (baseR + 40 * radiusScale), color: 0x333300, opacity: 0.3 }   // d-block
+                ];
+            } else {
+                // Single arc for all blocks
+                radii = [
+                    { r: baseR, color: 0x333366, opacity: 0.5 }
+                ];
+            }
+            
+            radii.forEach(({ r, color, opacity }) => {
+                if (r > 0) {
+                    const curve = new THREE.EllipseCurve(
+                        0, 0,
+                        r, r,
+                        -Math.PI/2, Math.PI/6,
+                        false,
+                        0
+                    );
+                    
+                    const points = curve.getPoints(50);
+                    const geometry = new THREE.BufferGeometry().setFromPoints(
+                        points.map(p => new THREE.Vector3(p.x, y, p.y))
+                    );
+                    
+                    const material = new THREE.LineBasicMaterial({ 
+                        color: color,
+                        transparent: true,
+                        opacity: opacity
+                    });
+                    
+                    const arc = new THREE.Line(geometry, material);
+                    scene.add(arc);
+                    ribbonMeshes.push(arc);
+                }
+            });
+        }
+    }
+    
+    // Central axis
+    if (settings.showAxis) {
+        const axisGeom = new THREE.CylinderGeometry(2, 2, 500, 8);
+        const axisMat = new THREE.MeshBasicMaterial({ color: 0x333333 });
+        const axis = new THREE.Mesh(axisGeom, axisMat);
+        axis.position.y = 200;
+        scene.add(axis);
+        ribbonMeshes.push(axis);
+    }
+}
+
+function setupUI() {
+    // Block visibility
+    ['s', 'p', 'noble', 'd', 'f'].forEach(block => {
+        const el = document.getElementById(`show-${block}`);
+        if (el) {
+            el.addEventListener('change', (e) => {
+                settings.blocks[block] = e.target.checked;
+                buildHelix();
+            });
+        }
+    });
+    
+    // 3D controls
+    document.getElementById('pitch').addEventListener('input', (e) => {
+        settings.pitch = parseInt(e.target.value);
+        buildHelix();
+    });
+    
+    document.getElementById('radius').addEventListener('input', (e) => {
+        settings.radius = parseInt(e.target.value);
+        buildHelix();
+    });
+    
+    document.getElementById('elementSize').addEventListener('input', (e) => {
+        settings.elementSize = parseInt(e.target.value);
+        buildHelix();
+    });
+    
+    document.getElementById('show-ribbons').addEventListener('change', (e) => {
+        settings.showRibbons = e.target.checked;
+        buildHelix();
+    });
+    
+    document.getElementById('show-axis').addEventListener('change', (e) => {
+        settings.showAxis = e.target.checked;
+        buildHelix();
+    });
+    
+    document.getElementById('show-labels').addEventListener('change', (e) => {
+        settings.showLabels = e.target.checked;
+        buildHelix();
+    });
+    
+    document.getElementById('block-separation').addEventListener('change', (e) => {
+        settings.blockSeparation = e.target.checked;
+        buildHelix();
+    });
+    
+    document.getElementById('auto-rotate').addEventListener('change', (e) => {
+        settings.autoRotate = e.target.checked;
+    });
+}
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function onMouseMove(e) {
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(elementMeshes);
+    
+    if (intersects.length > 0) {
+        const el = intersects[0].object.userData;
+        if (hoveredElement !== el) {
+            hoveredElement = el;
+            updateHoverInfo(el);
+            document.body.style.cursor = 'pointer';
+        }
+    } else {
+        if (hoveredElement) {
+            hoveredElement = null;
+            document.body.style.cursor = 'default';
+        }
+    }
+}
+
+function onClick(e) {
+    if (hoveredElement) {
+        updateHoverInfo(hoveredElement);
+    }
+}
+
+function updateHoverInfo(el) {
+    const info = document.getElementById('hover-info');
+    const color = '#' + COLORS[el.block].toString(16).padStart(6, '0');
+    
+    info.innerHTML = `
+        <span class="sym" style="color: ${color}">${el.sym}</span>
+        <span style="color: #888">Z=${el.Z}</span><br>
+        Period: ${el.period}, Group: ${el.group}<br>
+        Block: ${el.block}<br>
+        <b>φ = ${el.phi.toFixed(2)}°</b><br>
+        IE: ${el.IE.toFixed(4)} eV<br>
+        Strand: ${el.strand}
+    `;
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    
+    if (settings.autoRotate) {
+        window.spherical.theta += 0.005;
+        window.updateCamera();
+    }
+    
+    renderer.render(scene, camera);
+}
+
+// Start
+init();
+    </script>
+</body>
+</html>
